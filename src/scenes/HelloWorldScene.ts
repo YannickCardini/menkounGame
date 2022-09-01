@@ -5,7 +5,7 @@ export default class HelloWorldScene extends Phaser.Scene {
     map: Tilemaps.Tilemap;
     groundLayer: Tilemaps.TilemapLayer;
     player: any; //Physics.Arcade.Sprite;
-    static readonly SCALE: number = 4 / 7;
+    static readonly SCALE: number = 0.5;
     cursors: Phaser.Types.Input.Keyboard.CursorKeys;
 
 
@@ -16,28 +16,31 @@ export default class HelloWorldScene extends Phaser.Scene {
 
     preload() {
         // map made with Tiled in JSON format
-        this.load.tilemapTiledJSON('map', '/assets/map.json')
+        this.load.tilemapTiledJSON('map', '/assets/marecage.json')
         // tiles in spritesheet 
-        this.load.image('tiles', 'assets/tiles.png');
-        // simple coin image
-        // this.load.image('coin', 'assets/coinGold.png');
+        this.load.image('cube', 'assets/tiles_cube.png');
         // player animations
         this.load.atlas('player', 'assets/player.png', 'assets/player.json');
+        // Decorations
+        this.load.image('banc', 'assets/decor.png');
+
     }
 
     create() {
         const tilemapConfig: Phaser.Types.Tilemaps.TilemapConfig = {
             key: "map",
-            tileWidth: 70,
-            tileHeight: 70
+            tileWidth: 32,
+            tileHeight: 32
         };
         // load the map
         this.map = this.make.tilemap(tilemapConfig);
         // tiles for the ground layer
-        var groundTiles = this.map.addTilesetImage('tiles');
-        console.log(groundTiles)
+        var groundTiles = this.map.addTilesetImage('cube');
         // create the ground layer
-        this.groundLayer = this.map.createLayer('Monde', groundTiles).setScale(HelloWorldScene.SCALE);
+        this.groundLayer = this.map.createLayer('Monde', groundTiles);
+
+        // Create decorations
+        this.add.image(485,160,'banc');
 
         // // the player will collide with this layer
         this.groundLayer.setCollisionByExclusion([-1]);
@@ -60,7 +63,7 @@ export default class HelloWorldScene extends Phaser.Scene {
         this.cameras.main.startFollow(this.player);
 
         // set background color, so the sky is not black    
-        this.cameras.main.setBackgroundColor('#ccccff');
+        this.cameras.main.setBackgroundColor('#99daf6');
 
         // player walk animation
         this.anims.create({
