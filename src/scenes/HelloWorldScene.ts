@@ -1,39 +1,41 @@
-import Phaser from 'phaser'
+import Phaser, { Tilemaps } from 'phaser'
 
-export default class HelloWorldScene extends Phaser.Scene
-{
-	constructor()
-	{
-		super('hello-world')
-	}
+export default class HelloWorldScene extends Phaser.Scene {
 
-	preload()
-    {
-        this.load.setBaseURL('http://labs.phaser.io')
+    map: Tilemaps.Tilemap;
+    groundLayer: Tilemaps.TilemapLayer;
 
-        this.load.image('sky', 'assets/skies/space3.png')
-        this.load.image('logo', 'assets/sprites/phaser3-logo.png')
-        this.load.image('red', 'assets/particles/red.png')
+    constructor(bob: Tilemaps.Tilemap) {
+        super('hello-world');
     }
 
-    create()
-    {
-        this.add.image(400, 300, 'sky')
+    preload() {
+        // // map made with Tiled in JSON format
+        this.load.tilemapTiledJSON('map', 'assets/map.json');
+        // // tiles in spritesheet 
+        this.load.spritesheet('tiles', 'assets/tiles.png', { frameWidth: 70, frameHeight: 70 });
+        // // simple coin image
+        this.load.image('coin', 'assets/coinGold.png');
+        // // player animations
+        this.load.atlas('player', 'assets/player.png', 'assets/player.json');
+    }
 
-        const particles = this.add.particles('red')
+    create() {
+        // load the map
+        this.map = this.make.tilemap({ key: 'map' });
+        // tiles for the ground layer
+        var groundTiles = this.map.addTilesetImage('tiles');
+        // create the ground layer
+        this.groundLayer = this.map.createBlankLayer('level1', groundTiles, 0, 0);
+        // // the player will collide with this layer
+        this.groundLayer.setCollisionByExclusion([-1]);
+        // // set the boundaries of our game world
+        this.physics.world.bounds.width = this.groundLayer.width;
+        this.physics.world.bounds.height = this.groundLayer.height;
 
-        const emitter = particles.createEmitter({
-            speed: 100,
-            scale: { start: 1, end: 0 },
-            blendMode: 'ADD'
-        })
+    }
 
-        const logo = this.physics.add.image(400, 100, 'logo')
+    update(time: number, delta: number): void {
 
-        logo.setVelocity(100, 200)
-        logo.setBounce(1, 1)
-        logo.setCollideWorldBounds(true)
-
-        emitter.startFollow(logo)
     }
 }
