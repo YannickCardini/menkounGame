@@ -2,15 +2,19 @@ import Phaser, { Scale } from 'phaser'
 
 import HelloWorldScene from './scenes/HelloWorldScene'
 
+const WIDTH: number = 620;
+const HEIGHT: number = 320;
+
+
 const widthHeight = {
-	width: 620,
-	height: 320
+	width: WIDTH,
+	height: HEIGHT
 }
 
 const config: Phaser.Types.Core.GameConfig = {
 	type: Phaser.AUTO,
-	width: 620,
-	height: 320,
+	width: WIDTH,
+	height: HEIGHT,
 	scale: {
 		// Fit to window
 		mode: Phaser.Scale.FIT,
@@ -22,8 +26,10 @@ const config: Phaser.Types.Core.GameConfig = {
 	physics: {
 		default: 'arcade',
 		arcade: {
-			gravity: { y: 500 }
+			gravity: { y: 500 },
+			debug: true
 		}
+
 	},
 	scene: [HelloWorldScene]
 }
