@@ -4,14 +4,14 @@ export default class HelloWorldScene extends Phaser.Scene {
 
     map: Tilemaps.Tilemap;
     groundLayer: Tilemaps.TilemapLayer;
-    player: any; //Physics.Arcade.Sprite;
+    player: Physics.Arcade.Sprite;
     static readonly SCALE: number = 0.5;
     cursors: Phaser.Types.Input.Keyboard.CursorKeys;
+    static readonly VELOCITY: number = 200;
 
 
     constructor() {
         super('hello-world');
-
     }
 
     preload() {
@@ -23,6 +23,7 @@ export default class HelloWorldScene extends Phaser.Scene {
         this.load.atlas('player', 'assets/player.png', 'assets/player.json');
         // Decorations
         this.load.image('banc', 'assets/decor.png');
+
 
     }
 
@@ -86,20 +87,25 @@ export default class HelloWorldScene extends Phaser.Scene {
     update(time: number, delta: number): void {
         if (this.cursors.left.isDown) // if the left arrow key is down
         {
-            this.player.body.setVelocityX(-200); // move left
+            this.player.setVelocityX(-HelloWorldScene.VELOCITY); // move left
             this.player.anims.play('walk', true); // play walk animation
             this.player.flipX = true; // flip the sprite to the left
         }
         else if (this.cursors.right.isDown) // if the right arrow key is down
         {
-            this.player.body.setVelocityX(200); // move right
+            this.player.setVelocityX(HelloWorldScene.VELOCITY); // move right
             this.player.anims.play('walk', true); // play walk animatio
-            this.player.flipX = false; // use the original sprite looking to the right
+            this.player.flipX = false; // use the original sprite looking to    the right
+            }
+        else{
+
+                this.player.setVelocityX(0);
+                this.player.anims.play('idle', true)
+            
         }
         if ((this.cursors.space.isDown || this.cursors.up.isDown) && this.player.body.onFloor()) {
-            this.player.body.setVelocityY(-500); // jump up
+            this.player.setVelocityY(-500); // jump up
             this.player.anims.play('idle', true);
-
         }
     }
 }
