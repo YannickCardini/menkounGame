@@ -109,6 +109,12 @@ export default class HelloWorldScene extends Phaser.Scene {
             frameRate: 7,
         })
 
+        this.anims.create({
+            key: "fall",
+            frames: this.anims.generateFrameNames('cat', { prefix: 'p1_fall', start: 1, end: 8, zeroPad: 2 }),
+            frameRate: 27,
+        })
+
         this.time.addEvent({ delay: 1000, callback: this.delayDone, callbackScope: this, loop: false })
 
 
@@ -139,21 +145,26 @@ export default class HelloWorldScene extends Phaser.Scene {
         else if (this.cursors.left.isDown) // if the left arrow key is down
         {
             this.player.setVelocityX(-HelloWorldScene.VELOCITY); // move left
-            if(this.player.body.onFloor())
+            if (this.player.body.onFloor())
                 this.player.anims.play('run', true); // play run animation
             this.player.flipX = true; // flip the sprite to the left
         }
         else if (this.cursors.right.isDown) // if the right arrow key is down
         {
             this.player.setVelocityX(HelloWorldScene.VELOCITY); // move right
-            if(this.player.body.onFloor())
+            if (this.player.body.onFloor())
                 this.player.anims.play('run', true); // play run animatio
             this.player.flipX = false; // use the original sprite looking to    the right
         }
-        else  {
+        else {
             this.player.setVelocityX(0);
             if (this.player.body.onFloor())
                 this.player.anims.play('idle', true)
+            else if (this.player.body.velocity.y > 0) {
+                this.player.anims.play('fall',true)
+            }
         }
+
+
     }
 }
