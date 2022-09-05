@@ -1,48 +1,7 @@
-import Phaser, { Physics, Scene, Tilemaps } from 'phaser'
+import Phaser, { Physics, Tilemaps } from 'phaser'
+import { TweenHelper } from '~/utils/TweenHelper';
 
-export class TweenHelper {
-    static flashElement(scene: Scene, element: Phaser.GameObjects.Image | Phaser.GameObjects.Text, repeat: number = 2, easing: string = 'Linear', overallDuration: number = 300, visiblePauseDuration: number = 100) {
-        if (scene && element) {
-            let flashDuration = overallDuration - visiblePauseDuration / 2;
-
-            scene.tweens.timeline({
-                tweens: [
-                    {
-                        targets: element,
-                        duration: 0,
-                        alpha: 1,
-                        ease: easing
-                    },
-                    {
-                        targets: element,
-                        duration: flashDuration,
-                        alpha: 0,
-                        ease: easing
-                    },
-                    {
-                        targets: element,
-                        duration: visiblePauseDuration,
-                        alpha: 0,
-                        ease: easing
-                    },
-                    {
-                        targets: element,
-                        duration: flashDuration,
-                        alpha: 1,
-                        ease: easing,
-                        onComplete: () => {
-                            if (repeat !== 0) {
-                                this.flashElement(scene, element, repeat - 1);
-                            }
-                        }
-                    }
-                ]
-            });
-        }
-    }
-}
-
-export default class HelloWorldScene extends Phaser.Scene {
+export default class LevelZero extends Phaser.Scene {
 
     map: Tilemaps.Tilemap;
     groundLayer: Tilemaps.TilemapLayer;
@@ -50,7 +9,7 @@ export default class HelloWorldScene extends Phaser.Scene {
     static readonly SCALE: number = 0.5;
     cursors: Phaser.Types.Input.Keyboard.CursorKeys;
     static readonly VELOCITY: number = 200;
-    static readonly backgroundLayersLength: number = 11;
+    static readonly backgroundLayersStart: number = 4;
     downKey: Phaser.Input.Keyboard.Key;
     nbrLife: number;
     debugPlayerPositionText: Phaser.GameObjects.Text;
@@ -61,11 +20,11 @@ export default class HelloWorldScene extends Phaser.Scene {
 
     preload() {
         // map made with Tiled in JSON format
-        this.load.tilemapTiledJSON('map', '/assets/marecage.json')
+        this.load.tilemapTiledJSON('map', '/assets/tiled/level0.json')
         // tiles in spritesheet 
-        this.load.image('cube', 'assets/tiles_cube.png');
+        this.load.image('cube', 'assets/tiled/cube.png');
         //Background Layers
-        for (let i = 2; i < HelloWorldScene.backgroundLayersLength; i++) 
+        for (let i = LevelZero.backgroundLayersStart; i < 12; i++) 
             this.load.image('background-'+i,"assets/background/background-"+i+".png");
             
         // life info
@@ -74,27 +33,19 @@ export default class HelloWorldScene extends Phaser.Scene {
         this.load.atlas('cat', 'assets/cat-0.png', 'assets/cat.json');
         // Decorations
         this.load.image('decor', 'assets/decor.png');
-
     }
 
-    create(data: {
-        notFirst: boolean; life: number;
-    }) {
+    create(data: {notFirst: boolean; life: number;}) {
 
-        this.createLifeStatus(data);
+        // // Create background layers
+        for (let i = 11; i > (LevelZero.backgroundLayersStart-1) ; i--) 
+            this.add.image(1018,1040,'background-'+i).setScrollFactor(2/i,1);
 
-        let tmp = [0,0.05,0.1,0.15,0.2,0.25,0.35]
-        let j = 0;
-
-        // Create background
-        for (let i = HelloWorldScene.backgroundLayersLength; i > 4 ; i--) {
-            this.add.image(485,160,'background-'+i).setScale(0.5).setScrollFactor(tmp[j]);
-            j++;
-
-        }
-        
         // Create decorations
-        this.add.image(485, 160, 'decor');
+        this.add.image(485, 1060, 'decor');
+
+        // Add life counter at the top left corner
+        this.createLifeStatus(data);
 
         const tilemapConfig: Phaser.Types.Tilemaps.TilemapConfig = {
             key: "map",
@@ -103,13 +54,11 @@ export default class HelloWorldScene extends Phaser.Scene {
         };
         // load the map
         this.map = this.make.tilemap(tilemapConfig);
-
         
         // tiles for the ground layer
-        var groundTiles = this.map.addTilesetImage('cube');
+        const groundTiles = this.map.addTilesetImage('cube');
         // create the ground layer
-        this.groundLayer = this.map.createLayer('Monde', groundTiles);
-
+        this.groundLayer = this.map.createLayer('platform', groundTiles);
 
         // // the player will collide with this layer
         this.groundLayer.setCollisionByExclusion([-1]);
@@ -118,14 +67,12 @@ export default class HelloWorldScene extends Phaser.Scene {
         this.physics.world.bounds.height = this.groundLayer.height;
 
         // create the player sprite    
-        this.player = this.physics.add.sprite(200, -100, 'cat').setScale(HelloWorldScene.SCALE);
+        this.player = this.physics.add.sprite(200, 700, 'cat').setScale(LevelZero.SCALE);
 
         // this.player.setBounce(0.2); // our player will bounce from items
         // this.player.setCollideWorldBounds(true); // don't go out of the map
-        
 
         this.physics.add.collider(this.groundLayer, this.player);
-
 
         // set bounds so the camera won't go outside the game world
         this.cameras.main.setBounds(32, 0, this.map.widthInPixels, this.map.heightInPixels);
@@ -183,7 +130,7 @@ export default class HelloWorldScene extends Phaser.Scene {
             frameRate: 9,
         })
 
-        this.time.addEvent({ delay: 1000, callback: this.delayDone, callbackScope: this, loop: false })
+        this.time.addEvent({ delay: 500, callback: this.delayDone, callbackScope: this, loop: false })
         this.debugPlayerPositionText = this.add.text(30,30,this.player.x + " , " + this.player.y).setScrollFactor(0)
     }
 
@@ -191,7 +138,7 @@ export default class HelloWorldScene extends Phaser.Scene {
         this.player.body.setSize(this.player.width - 80, this.player.height - 3, true);
     }
 
-    updatePlayerPositionText(x: number, y:number): void{
+    updatePlayerPositionText(x: number, y: number): void{
         this.debugPlayerPositionText.setText("x: "+x+" , y:"+y);
     }
 
@@ -200,9 +147,9 @@ export default class HelloWorldScene extends Phaser.Scene {
         this.player.setAccelerationX(0);
     }
 
-    createLifeStatus(data: {life: number, notFirst:boolean}) {
+    createLifeStatus(data: {life: number, notFirst: boolean}) {
         this.nbrLife = data.life !== undefined ? data.life : 3;
-        const lifeImg = this.add.image(20, 20, 'life').setScrollFactor(0).setScale(0.3);
+        const lifeImg = this.add.image(20, 20, 'life').setScrollFactor(0);
         const style: Phaser.Types.GameObjects.Text.TextStyle = { font: "12pt Courier", color: "#ffb000", strokeThickness: 1, stroke: "#000000" }
         const lifeText = this.add.text(35, 12, "x" + this.nbrLife.toString(), style).setScrollFactor(0);
         if (data.notFirst) {
@@ -211,18 +158,16 @@ export default class HelloWorldScene extends Phaser.Scene {
         }
     }
 
-    update(time: number, delta: number): void {
+    update(): void {
         this.updatePlayerPositionText(this.player.x,this.player.y)
-
-
-        if (this.player.y > 320)
+        if (this.player.y > 1280)
             this.scene.restart({ life: this.nbrLife - 1, notFirst: true });
         else if (this.player.state === "sliding") {
             this.player.anims.play("slide", true);
             if (this.player.flipX)
-                this.player.setVelocityX(-HelloWorldScene.VELOCITY)
+                this.player.setVelocityX(-LevelZero.VELOCITY)
             else
-                this.player.setVelocityX(HelloWorldScene.VELOCITY)
+                this.player.setVelocityX(LevelZero.VELOCITY)
         }
         else if (this.player.body.velocity.y > 0) {
             this.player.anims.play('fall', true);
@@ -237,7 +182,7 @@ export default class HelloWorldScene extends Phaser.Scene {
         }
         else if (this.cursors.left.isDown) // if the left arrow key is down
         {
-            this.player.setVelocityX(-HelloWorldScene.VELOCITY); // move left
+            this.player.setVelocityX(-LevelZero.VELOCITY); // move left
             console.log(this.player.getBounds());
 
             if (this.player.body.onFloor())
@@ -246,7 +191,7 @@ export default class HelloWorldScene extends Phaser.Scene {
         }
         else if (this.cursors.right.isDown) // if the right arrow key is down
         {
-            this.player.setVelocityX(HelloWorldScene.VELOCITY); // move right
+            this.player.setVelocityX(LevelZero.VELOCITY); // move right
             if (this.player.body.onFloor())
                 this.player.anims.play('run', true); // play run animatio
             this.player.flipX = false; // use the original sprite looking to    the right

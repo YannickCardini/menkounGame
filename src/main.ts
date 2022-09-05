@@ -1,9 +1,8 @@
-import Phaser, { Scale } from 'phaser'
+import Phaser from 'phaser'
+import LevelZero from './scenes/LevelZero';
 
-import HelloWorldScene from './scenes/HelloWorldScene'
-
-const WIDTH: number = 620;
-const HEIGHT: number = 320;
+const WIDTH = 620;
+const HEIGHT = 320;
 
 
 const widthHeight = {
@@ -31,7 +30,7 @@ const config: Phaser.Types.Core.GameConfig = {
 		}
 
 	},
-	scene: [HelloWorldScene]
+	scene: [LevelZero]
 }
 
 export default new Phaser.Game(config)
