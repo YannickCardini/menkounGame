@@ -22,11 +22,11 @@ export default class LevelZero extends Phaser.Scene {
         // map made with Tiled in JSON format
         this.load.tilemapTiledJSON('map', '/assets/tiled/level0.json')
         // tiles in spritesheet 
-        this.load.image('cube', 'assets/tiled/cube.png');
+        this.load.image('TX Tileset Ground', 'assets/tiled/TX Tileset Ground.png');
         //Background Layers
-        for (let i = LevelZero.backgroundLayersStart; i < 12; i++) 
-            this.load.image('background-'+i,"assets/background/background-"+i+".png");
-            
+        for (let i = LevelZero.backgroundLayersStart; i < 12; i++)
+            this.load.image('background-' + i, "assets/background/background-" + i + ".png");
+
         // life info
         this.load.image("life", "assets/life.png")
         // player animations
@@ -35,14 +35,14 @@ export default class LevelZero extends Phaser.Scene {
         this.load.image('decor', 'assets/decor.png');
     }
 
-    create(data: {notFirst: boolean; life: number;}) {
+    create(data: { notFirst: boolean; life: number; }) {
 
         // // Create background layers
-        for (let i = 11; i > (LevelZero.backgroundLayersStart-1) ; i--) 
-            this.add.image(1018,1040,'background-'+i).setScrollFactor(2/i,1);
+        for (let i = 11; i > (LevelZero.backgroundLayersStart - 1); i--)
+            this.add.image(1018, 1040, 'background-' + i).setScrollFactor(2 / i, 1);
 
         // Create decorations
-        this.add.image(485, 1060, 'decor');
+        this.add.image(1030, 736, 'decor');
 
         // Add life counter at the top left corner
         this.createLifeStatus(data);
@@ -54,9 +54,9 @@ export default class LevelZero extends Phaser.Scene {
         };
         // load the map
         this.map = this.make.tilemap(tilemapConfig);
-        
+
         // tiles for the ground layer
-        const groundTiles = this.map.addTilesetImage('cube');
+        const groundTiles = this.map.addTilesetImage('TX Tileset Ground');
         // create the ground layer
         this.groundLayer = this.map.createLayer('platform', groundTiles);
 
@@ -75,7 +75,7 @@ export default class LevelZero extends Phaser.Scene {
         this.physics.add.collider(this.groundLayer, this.player);
 
         // set bounds so the camera won't go outside the game world
-        this.cameras.main.setBounds(32, 0, this.map.widthInPixels, this.map.heightInPixels);
+        this.cameras.main.setBounds(32, 0, this.map.widthInPixels - 64, this.map.heightInPixels);
         // make the camera follow the player
         this.cameras.main.startFollow(this.player);
 
@@ -131,15 +131,15 @@ export default class LevelZero extends Phaser.Scene {
         })
 
         this.time.addEvent({ delay: 500, callback: this.delayDone, callbackScope: this, loop: false })
-        this.debugPlayerPositionText = this.add.text(30,30,this.player.x + " , " + this.player.y).setScrollFactor(0)
+        this.debugPlayerPositionText = this.add.text(30, 30, this.player.x + " , " + this.player.y).setScrollFactor(0)
     }
 
     delayDone(): void {
         this.player.body.setSize(this.player.width - 80, this.player.height - 3, true);
     }
 
-    updatePlayerPositionText(x: number, y: number): void{
-        this.debugPlayerPositionText.setText("x: "+x+" , y:"+y);
+    updatePlayerPositionText(x: number, y: number): void {
+        this.debugPlayerPositionText.setText("x: " + x + " , y:" + y);
     }
 
     stopSliding(): void {
@@ -147,7 +147,7 @@ export default class LevelZero extends Phaser.Scene {
         this.player.setAccelerationX(0);
     }
 
-    createLifeStatus(data: {life: number, notFirst: boolean}) {
+    createLifeStatus(data: { life: number, notFirst: boolean }) {
         this.nbrLife = data.life !== undefined ? data.life : 3;
         const lifeImg = this.add.image(20, 20, 'life').setScrollFactor(0);
         const style: Phaser.Types.GameObjects.Text.TextStyle = { font: "12pt Courier", color: "#ffb000", strokeThickness: 1, stroke: "#000000" }
@@ -158,23 +158,47 @@ export default class LevelZero extends Phaser.Scene {
         }
     }
 
+    animation(): void {
+        switch (this.player.state) {
+            case "sliding":
+                this.player.anims.play("slide", true);
+                break;
+            case "falling":
+                this.player.anims.play("fall", true);
+                break;
+            case "jumping":
+                this.player.anims.play('jump', true);
+                break;
+            case "running":
+                this.player.anims.play("run", true);
+                break;
+            case "sliding":
+                this.player.anims.play("slide", true);
+                break;
+            case "idling":
+                this.player.anims.play("idle", true);
+                break;
+            default:
+                this.player.anims.play("idle", true);;
+        }
+    }
+
     update(): void {
-        this.updatePlayerPositionText(this.player.x,this.player.y)
+        this.updatePlayerPositionText(this.player.x, this.player.y);
+        this.animation();
+        if (this.player.body.velocity.y > 0) 
+            this.player.state = "falling";  
         if (this.player.y > 1280)
             this.scene.restart({ life: this.nbrLife - 1, notFirst: true });
         else if (this.player.state === "sliding") {
-            this.player.anims.play("slide", true);
             if (this.player.flipX)
                 this.player.setVelocityX(-LevelZero.VELOCITY)
             else
                 this.player.setVelocityX(LevelZero.VELOCITY)
         }
-        else if (this.player.body.velocity.y > 0) {
-            this.player.anims.play('fall', true);
-        }
         else if ((this.cursors.space.isDown || this.cursors.up.isDown) && this.player.body.onFloor()) {
+            this.player.state = "jumping";
             this.player.setVelocityY(-400); // jump up
-            this.player.anims.play('jump', true);
         }
         else if (Phaser.Input.Keyboard.JustDown(this.downKey) && this.player.body.onFloor()) {
             this.player.state = "sliding";
@@ -183,26 +207,21 @@ export default class LevelZero extends Phaser.Scene {
         else if (this.cursors.left.isDown) // if the left arrow key is down
         {
             this.player.setVelocityX(-LevelZero.VELOCITY); // move left
-            console.log(this.player.getBounds());
-
             if (this.player.body.onFloor())
-                this.player.anims.play('run', true); // play run animation
+                this.player.state = "running"; // play run animation
             this.player.flipX = true; // flip the sprite to the left
         }
         else if (this.cursors.right.isDown) // if the right arrow key is down
         {
             this.player.setVelocityX(LevelZero.VELOCITY); // move right
             if (this.player.body.onFloor())
-                this.player.anims.play('run', true); // play run animatio
+                this.player.state = "running"; // play run animation
             this.player.flipX = false; // use the original sprite looking to    the right
         }
         else {
             this.player.setVelocityX(0);
             if (this.player.body.onFloor())
-                this.player.anims.play('idle', true)
-
+                this.player.state = "idling";
         }
-
-
     }
 }
