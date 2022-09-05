@@ -50,9 +50,10 @@ export default class HelloWorldScene extends Phaser.Scene {
     static readonly SCALE: number = 0.5;
     cursors: Phaser.Types.Input.Keyboard.CursorKeys;
     static readonly VELOCITY: number = 200;
+    static readonly backgroundLayersLength: number = 11;
     downKey: Phaser.Input.Keyboard.Key;
     nbrLife: number;
-
+    debugPlayerPositionText: Phaser.GameObjects.Text;
 
     constructor() {
         super('hello-world');
@@ -63,19 +64,37 @@ export default class HelloWorldScene extends Phaser.Scene {
         this.load.tilemapTiledJSON('map', '/assets/marecage.json')
         // tiles in spritesheet 
         this.load.image('cube', 'assets/tiles_cube.png');
+        //Background Layers
+        for (let i = 2; i < HelloWorldScene.backgroundLayersLength; i++) 
+            this.load.image('background-'+i,"assets/background/background-"+i+".png");
+            
         // life info
         this.load.image("life", "assets/life.png")
         // player animations
         this.load.atlas('cat', 'assets/cat-0.png', 'assets/cat.json');
         // Decorations
         this.load.image('decor', 'assets/decor.png');
+
     }
 
     create(data: {
-        first: boolean; life: number;
+        notFirst: boolean; life: number;
     }) {
 
         this.createLifeStatus(data);
+
+        let tmp = [0,0.05,0.1,0.15,0.2,0.25,0.35]
+        let j = 0;
+
+        // Create background
+        for (let i = HelloWorldScene.backgroundLayersLength; i > 4 ; i--) {
+            this.add.image(485,160,'background-'+i).setScale(0.5).setScrollFactor(tmp[j]);
+            j++;
+
+        }
+        
+        // Create decorations
+        this.add.image(485, 160, 'decor');
 
         const tilemapConfig: Phaser.Types.Tilemaps.TilemapConfig = {
             key: "map",
@@ -84,13 +103,13 @@ export default class HelloWorldScene extends Phaser.Scene {
         };
         // load the map
         this.map = this.make.tilemap(tilemapConfig);
+
+        
         // tiles for the ground layer
         var groundTiles = this.map.addTilesetImage('cube');
         // create the ground layer
         this.groundLayer = this.map.createLayer('Monde', groundTiles);
 
-        // Create decorations
-        this.add.image(485, 160, 'decor');
 
         // // the player will collide with this layer
         this.groundLayer.setCollisionByExclusion([-1]);
@@ -103,18 +122,18 @@ export default class HelloWorldScene extends Phaser.Scene {
 
         // this.player.setBounce(0.2); // our player will bounce from items
         // this.player.setCollideWorldBounds(true); // don't go out of the map
+        
 
         this.physics.add.collider(this.groundLayer, this.player);
 
 
         // set bounds so the camera won't go outside the game world
-        this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
+        this.cameras.main.setBounds(32, 0, this.map.widthInPixels, this.map.heightInPixels);
         // make the camera follow the player
         this.cameras.main.startFollow(this.player);
 
         // set background color, so the sky is not black    
         this.cameras.main.setBackgroundColor('#99daf6');
-
 
         this.cursors = this.input.keyboard.createCursorKeys();
         this.downKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
@@ -165,10 +184,15 @@ export default class HelloWorldScene extends Phaser.Scene {
         })
 
         this.time.addEvent({ delay: 1000, callback: this.delayDone, callbackScope: this, loop: false })
+        this.debugPlayerPositionText = this.add.text(30,30,this.player.x + " , " + this.player.y).setScrollFactor(0)
     }
 
     delayDone(): void {
         this.player.body.setSize(this.player.width - 80, this.player.height - 3, true);
+    }
+
+    updatePlayerPositionText(x: number, y:number): void{
+        this.debugPlayerPositionText.setText("x: "+x+" , y:"+y);
     }
 
     stopSliding(): void {
@@ -188,6 +212,9 @@ export default class HelloWorldScene extends Phaser.Scene {
     }
 
     update(time: number, delta: number): void {
+        this.updatePlayerPositionText(this.player.x,this.player.y)
+
+
         if (this.player.y > 320)
             this.scene.restart({ life: this.nbrLife - 1, notFirst: true });
         else if (this.player.state === "sliding") {
