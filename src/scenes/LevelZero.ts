@@ -1,12 +1,13 @@
 import Phaser, { NONE, Physics, Tilemaps } from 'phaser'
-import { TweenHelper } from '~/utils/TweenHelper';
+import { Mushroom, MushroomConfig } from '~/class/Mushroom';
+import { TweenHelper } from '~/class/TweenHelper';
 
 export default class LevelZero extends Phaser.Scene {
 
     map: Tilemaps.Tilemap;
     groundLayer: Tilemaps.TilemapLayer;
     player: Physics.Arcade.Sprite;
-    mushroom: Physics.Arcade.Sprite;
+    mushroom: Mushroom;
     static readonly SCALE: number = 0.5;
     cursors: Phaser.Types.Input.Keyboard.CursorKeys;
     static readonly VELOCITY: number = 200;
@@ -14,6 +15,7 @@ export default class LevelZero extends Phaser.Scene {
     downKey: Phaser.Input.Keyboard.Key;
     nbrLife: number;
     debugPlayerPositionText: Phaser.GameObjects.Text;
+    stopAnimation: boolean;
 
     constructor() {
         super('hello-world');
@@ -39,6 +41,8 @@ export default class LevelZero extends Phaser.Scene {
     }
 
     create(data: { notFirst: boolean; life: number; }) {
+
+        this.stopAnimation = false;
 
         // // Create background layers
         for (let i = 11; i > (LevelZero.backgroundLayersStart - 1); i--)
@@ -69,9 +73,18 @@ export default class LevelZero extends Phaser.Scene {
         this.physics.world.bounds.width = this.groundLayer.width;
         this.physics.world.bounds.height = this.groundLayer.height;
 
+        let config: MushroomConfig = {
+            scene: this,
+            x: 730,
+            y: 1055,
+            state: "walking_right",
+            walkingRangeX1: 600,
+            walkingRangeX2: 900
+        }
+
         // create the mushroom sprite    
-        this.mushroom = this.physics.add.sprite(730, 1055, 'mushroom').setScale(LevelZero.SCALE / 4);
-        this.mushroom.state = "walking_right";
+        this.mushroom = new Mushroom(config);
+        
 
         // create the player sprite    
         this.player = this.physics.add.sprite(200, 700, 'cat').setScale(LevelZero.SCALE);
@@ -79,11 +92,11 @@ export default class LevelZero extends Phaser.Scene {
         this.physics.add.collider(this.groundLayer, this.player);
         this.physics.add.collider(this.groundLayer, this.mushroom);
 
-
         // set bounds so the camera won't go outside the game world
         this.cameras.main.setBounds(32, 0, this.map.widthInPixels - 64, this.map.heightInPixels);
         // make the camera follow the player
         this.cameras.main.startFollow(this.player);
+        this.cameras.main.fadeIn(2000);
 
         // set background color, so the sky is not black    
         this.cameras.main.setBackgroundColor('#99daf6');
@@ -127,8 +140,7 @@ export default class LevelZero extends Phaser.Scene {
         this.anims.create({
             key: "dead",
             frames: this.anims.generateFrameNames('cat', { prefix: 'p1_dead', start: 1, end: 10, zeroPad: 2 }),
-            frameRate: 12,
-            repeat: 0
+            frameRate: 6,
         })
 
         this.anims.create({
@@ -137,28 +149,12 @@ export default class LevelZero extends Phaser.Scene {
             frameRate: 9,
         })
 
-        this.anims.create({
-            key: "mushroom_walk",
-            frames: this.anims.generateFrameNames('mushroom', { prefix: 'm1_walk', start: 1, end: 4, zeroPad: 2 }),
-            frameRate: 5,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: "mushroom_crush",
-            frames: this.anims.generateFrameNames('mushroom', { prefix: 'm1_crush', start: 1, end: 4, zeroPad: 2 }),
-            frameRate: 15,
-            repeat: -1
-        });
-
         this.time.addEvent({ delay: 500, callback: this.delayDone, callbackScope: this, loop: false })
         this.debugPlayerPositionText = this.add.text(30, 30, this.player.x + " , " + this.player.y, { color: "black" }).setScrollFactor(0)
     }
 
     delayDone(): void {
         this.player.body.setSize(this.player.width - 80, this.player.height - 3, true);
-        this.mushroom.body.setSize(this.mushroom.width - 80, this.mushroom.height - 210, true);
-        this.mushroom.body.setOffset(50, 155)
     }
 
     updatePlayerPositionText(x: number, y: number): void {
@@ -219,7 +215,7 @@ export default class LevelZero extends Phaser.Scene {
     }
 
     getPlayerState(): string {
-        if(this.player.state === "sliding" || this.player.state === "dying")
+        if (this.player.state === "sliding" || this.player.state === "dying")
             return this.player.state;
         if (this.player.body.onFloor()) {
             if (this.player.body.velocity.x !== 0)
@@ -235,91 +231,67 @@ export default class LevelZero extends Phaser.Scene {
         }
     }
 
-    mushroomMovements(): void {
-
-        if (this.mushroom.x > 900 && this.mushroom.state === "walking_right")
-            this.mushroom.state = "walking_left";
-        else if (this.mushroom.x < 600 && this.mushroom.state === "walking_left")
-            this.mushroom.state = "walking_right";
-
-        if (this.mushroom.state === "walking_right") {
-            this.mushroom.setVelocityX(LevelZero.VELOCITY / 4)
-            this.mushroom.flipX = false;
-        }
-        else if (this.mushroom.state === "walking_left") {
-            this.mushroom.setVelocityX(-LevelZero.VELOCITY / 4)
-            this.mushroom.flipX = true;
-        }
-
-    }
-
-    jump(vely: number): void {
-        this.player.setVelocityY(-vely);
-    }
-
-    jumpingOnMushroom(): void {
-        this.jump(500);
-        this.mushroom.state = "crushed";
-        this.time.addEvent({ delay: 300, callback: this.stopCrush, callbackScope: this, loop: false })
-    }
-
-    stopCrush(): any {
-        this.mushroom.state = this.mushroom.flipX ? "walking_left" : "walking_right";
-    }
-
     playerDie(): void {
+        this.cameras.main.fadeOut(2000);
         this.player.state = "dying";
-        this.player.on('animationcomplete', () => {
+        this.mushroom.setVelocityX(0);
+        this.player.setVelocity(0,0);
+        this.player.on("animationcomplete", () => {
+            this.stopAnimation = true;
+        })
+        this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, (cam, effect) => {
             this.scene.restart({ life: this.nbrLife - 1, notFirst: true });
         })
     }
 
+    playerControls(): void {
+        if (this.player.state === "sliding") {
+            if (this.player.flipX)
+                this.player.setVelocityX(-LevelZero.VELOCITY)
+            else
+                this.player.setVelocityX(LevelZero.VELOCITY)
+        }
+        else if ((this.cursors.space.isDown || this.cursors.up.isDown) && this.player.body.onFloor())
+            this.player.setVelocityY(-400);
+        else if (Phaser.Input.Keyboard.JustDown(this.downKey) && this.player.body.onFloor()) {
+            this.player.state = "sliding";
+            this.time.addEvent({ delay: 400, callback: this.stopSliding, callbackScope: this, loop: false })
+        }
+        else if (this.cursors.left.isDown) // if the left arrow key is down
+        {
+            this.player.setVelocityX(-LevelZero.VELOCITY); // move left
+            this.player.flipX = true; // flip the sprite to the left
+        }
+        else if (this.cursors.right.isDown) // if the right arrow key is down
+        {
+            this.player.setVelocityX(LevelZero.VELOCITY); // move right
+            this.player.flipX = false; // use the original sprite looking to    the right
+        }
+        else
+            this.player.setVelocityX(0);
+    }
+
     update(): void {
-        this.animation();
-        this.player.state = this.getPlayerState();
-        this.updatePlayerPositionText(this.player.x, this.player.y);
+        if(!this.stopAnimation)
+            this.animation();
 
         if (this.player.state !== "dying") {
-            this.mushroomMovements();
-
+            this.player.state = this.getPlayerState();
+            this.updatePlayerPositionText(this.player.x, this.player.y);
+            this.mushroom.mushroomMovements();
+            this.playerControls();
             if (this.player.y > 1280)
                 this.playerDie();
-            else if (this.player.state === "sliding") {
-                if (this.player.flipX)
-                    this.player.setVelocityX(-LevelZero.VELOCITY)
-                else
-                    this.player.setVelocityX(LevelZero.VELOCITY)
-            }
-            else if ((this.cursors.space.isDown || this.cursors.up.isDown) && this.player.body.onFloor())
-                // jump up
-                this.jump(400);
-            else if (Phaser.Input.Keyboard.JustDown(this.downKey) && this.player.body.onFloor()) {
-                this.player.state = "sliding";
-                this.time.addEvent({ delay: 400, callback: this.stopSliding, callbackScope: this, loop: false })
-            }
-            else if (this.cursors.left.isDown) // if the left arrow key is down
-            {
-                this.player.setVelocityX(-LevelZero.VELOCITY); // move left
-                this.player.flipX = true; // flip the sprite to the left
-            }
-            else if (this.cursors.right.isDown) // if the right arrow key is down
-            {
-                this.player.setVelocityX(LevelZero.VELOCITY); // move right
-                this.player.flipX = false; // use the original sprite looking to    the right
-            }
-            else
-                this.player.setVelocityX(0);
-
             // handling collision between enemy and hero
             this.physics.world.collide(this.player, this.mushroom, (hero, mushroom) => {
-                if (mushroom.body.touching.up && hero.body.touching.down)
-                    this.jumpingOnMushroom();
+                if (mushroom.body.touching.up && hero.body.touching.down){
+                    this.player.setVelocityY(-500);
+                    this.mushroom.jumpOnMushroom();
+                }
                 else
-                    this.player.state = "dying";
+                    this.playerDie();
             });
+
         }
-
-
-
     }
 }
