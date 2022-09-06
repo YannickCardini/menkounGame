@@ -6,6 +6,7 @@ export default class LevelZero extends Phaser.Scene {
     map: Tilemaps.Tilemap;
     groundLayer: Tilemaps.TilemapLayer;
     player: Physics.Arcade.Sprite;
+    mushroom: Physics.Arcade.Sprite;
     static readonly SCALE: number = 0.5;
     cursors: Phaser.Types.Input.Keyboard.CursorKeys;
     static readonly VELOCITY: number = 200;
@@ -31,6 +32,8 @@ export default class LevelZero extends Phaser.Scene {
         this.load.image("life", "assets/life.png")
         // player animations
         this.load.atlas('cat', 'assets/cat-0.png', 'assets/cat.json');
+        // mushroom animations
+        this.load.atlas('mushroom', 'assets/mushroom.png', 'assets/mushroom.json');
         // Decorations
         this.load.image('decor', 'assets/decor.png');
     }
@@ -66,13 +69,16 @@ export default class LevelZero extends Phaser.Scene {
         this.physics.world.bounds.width = this.groundLayer.width;
         this.physics.world.bounds.height = this.groundLayer.height;
 
+        // create the mushroom sprite    
+        this.mushroom = this.physics.add.sprite(200, 700, 'mushroom').setScale(LevelZero.SCALE / 4);
+        this.mushroom.state = "walk_right";
+
         // create the player sprite    
         this.player = this.physics.add.sprite(200, 700, 'cat').setScale(LevelZero.SCALE);
 
-        // this.player.setBounce(0.2); // our player will bounce from items
-        // this.player.setCollideWorldBounds(true); // don't go out of the map
-
         this.physics.add.collider(this.groundLayer, this.player);
+        this.physics.add.collider(this.groundLayer, this.mushroom);
+
 
         // set bounds so the camera won't go outside the game world
         this.cameras.main.setBounds(32, 0, this.map.widthInPixels - 64, this.map.heightInPixels);
@@ -130,12 +136,27 @@ export default class LevelZero extends Phaser.Scene {
             frameRate: 9,
         })
 
+        this.anims.create({
+            key: "mushroom_walk",
+            frames: this.anims.generateFrameNames('mushroom', { prefix: 'm1_walk', start: 1, end: 4, zeroPad: 2 }),
+            frameRate: 5,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: "mushroom_crush",
+            frames: this.anims.generateFrameNames('mushroom', { prefix: 'm1_crush', start: 1, end: 4, zeroPad: 2 }),
+            frameRate: 5,
+            repeat: -1
+        });
+
         this.time.addEvent({ delay: 500, callback: this.delayDone, callbackScope: this, loop: false })
         this.debugPlayerPositionText = this.add.text(30, 30, this.player.x + " , " + this.player.y).setScrollFactor(0)
     }
 
     delayDone(): void {
         this.player.body.setSize(this.player.width - 80, this.player.height - 3, true);
+        this.mushroom.body.setSize(this.mushroom.width - 10, this.mushroom.height - 100, true);
     }
 
     updatePlayerPositionText(x: number, y: number): void {
@@ -180,14 +201,43 @@ export default class LevelZero extends Phaser.Scene {
                 break;
             default:
                 this.player.anims.play("idle", true);;
+        };
+        switch (this.mushroom.state) {
+            case "crushed":
+                this.mushroom.anims.play("mushroom_crush", true);
+                break;
+
+            default:
+                this.mushroom.anims.play("mushroom_walk", true);
+                break;
+        }
+    }
+
+    mushroomMovements(): void {
+        if (this.mushroom.x > 420 && this.mushroom.state === "walk_right")
+            this.mushroom.state = "walk_left";
+        else if (this.mushroom.x < 120 && this.mushroom.state === "walk_left")
+            this.mushroom.state = "walk_right";
+
+        if (this.mushroom.state === "walk_right") {
+            this.mushroom.setVelocityX(LevelZero.VELOCITY / 4)
+            this.mushroom.flipX = false;
+        }
+        else if (this.mushroom.state === "walk_left") {
+            this.mushroom.setVelocityX(-LevelZero.VELOCITY / 4)
+            this.mushroom.flipX = true;
         }
     }
 
     update(): void {
+
         this.updatePlayerPositionText(this.player.x, this.player.y);
         this.animation();
-        if (this.player.body.velocity.y > 0) 
-            this.player.state = "falling";  
+        this.mushroomMovements();
+
+
+        if (this.player.body.velocity.y > 0)
+            this.player.state = "falling";
         if (this.player.y > 1280)
             this.scene.restart({ life: this.nbrLife - 1, notFirst: true });
         else if (this.player.state === "sliding") {
