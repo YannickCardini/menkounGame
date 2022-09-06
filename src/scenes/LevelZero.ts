@@ -1,4 +1,4 @@
-import Phaser, { Physics, Tilemaps } from 'phaser'
+import Phaser, { NONE, Physics, Tilemaps } from 'phaser'
 import { TweenHelper } from '~/utils/TweenHelper';
 
 export default class LevelZero extends Phaser.Scene {
@@ -70,8 +70,8 @@ export default class LevelZero extends Phaser.Scene {
         this.physics.world.bounds.height = this.groundLayer.height;
 
         // create the mushroom sprite    
-        this.mushroom = this.physics.add.sprite(200, 700, 'mushroom').setScale(LevelZero.SCALE / 4);
-        this.mushroom.state = "walk_right";
+        this.mushroom = this.physics.add.sprite(730, 1055, 'mushroom').setScale(LevelZero.SCALE / 4);
+        this.mushroom.state = "walking_right";
 
         // create the player sprite    
         this.player = this.physics.add.sprite(200, 700, 'cat').setScale(LevelZero.SCALE);
@@ -127,7 +127,8 @@ export default class LevelZero extends Phaser.Scene {
         this.anims.create({
             key: "dead",
             frames: this.anims.generateFrameNames('cat', { prefix: 'p1_dead', start: 1, end: 10, zeroPad: 2 }),
-            frameRate: 7,
+            frameRate: 12,
+            repeat: 0
         })
 
         this.anims.create({
@@ -146,25 +147,26 @@ export default class LevelZero extends Phaser.Scene {
         this.anims.create({
             key: "mushroom_crush",
             frames: this.anims.generateFrameNames('mushroom', { prefix: 'm1_crush', start: 1, end: 4, zeroPad: 2 }),
-            frameRate: 5,
+            frameRate: 15,
             repeat: -1
         });
 
         this.time.addEvent({ delay: 500, callback: this.delayDone, callbackScope: this, loop: false })
-        this.debugPlayerPositionText = this.add.text(30, 30, this.player.x + " , " + this.player.y).setScrollFactor(0)
+        this.debugPlayerPositionText = this.add.text(30, 30, this.player.x + " , " + this.player.y, { color: "black" }).setScrollFactor(0)
     }
 
     delayDone(): void {
         this.player.body.setSize(this.player.width - 80, this.player.height - 3, true);
-        this.mushroom.body.setSize(this.mushroom.width - 10, this.mushroom.height - 100, true);
+        this.mushroom.body.setSize(this.mushroom.width - 80, this.mushroom.height - 210, true);
+        this.mushroom.body.setOffset(50, 155)
     }
 
     updatePlayerPositionText(x: number, y: number): void {
-        this.debugPlayerPositionText.setText("x: " + x + " , y:" + y);
+        this.debugPlayerPositionText.setText("x: " + x + " , y:" + y + "\n Player State: " + this.player.state);
     }
 
     stopSliding(): void {
-        this.player.state = "";
+        this.player.state = "idling";
         this.player.setAccelerationX(0);
     }
 
@@ -196,6 +198,9 @@ export default class LevelZero extends Phaser.Scene {
             case "sliding":
                 this.player.anims.play("slide", true);
                 break;
+            case "dying":
+                this.player.anims.play("dead", true);
+                break;
             case "idling":
                 this.player.anims.play("idle", true);
                 break;
@@ -213,65 +218,108 @@ export default class LevelZero extends Phaser.Scene {
         }
     }
 
-    mushroomMovements(): void {
-        if (this.mushroom.x > 420 && this.mushroom.state === "walk_right")
-            this.mushroom.state = "walk_left";
-        else if (this.mushroom.x < 120 && this.mushroom.state === "walk_left")
-            this.mushroom.state = "walk_right";
-
-        if (this.mushroom.state === "walk_right") {
-            this.mushroom.setVelocityX(LevelZero.VELOCITY / 4)
-            this.mushroom.flipX = false;
+    getPlayerState(): string {
+        if(this.player.state === "sliding" || this.player.state === "dying")
+            return this.player.state;
+        if (this.player.body.onFloor()) {
+            if (this.player.body.velocity.x !== 0)
+                return "running";
+            else
+                return "idling";
         }
-        else if (this.mushroom.state === "walk_left") {
-            this.mushroom.setVelocityX(-LevelZero.VELOCITY / 4)
-            this.mushroom.flipX = true;
+        else {
+            if (this.player.body.velocity.y < 0)
+                return "jumping"
+            else
+                return "falling"
         }
     }
 
-    update(): void {
+    mushroomMovements(): void {
 
-        this.updatePlayerPositionText(this.player.x, this.player.y);
-        this.animation();
-        this.mushroomMovements();
+        if (this.mushroom.x > 900 && this.mushroom.state === "walking_right")
+            this.mushroom.state = "walking_left";
+        else if (this.mushroom.x < 600 && this.mushroom.state === "walking_left")
+            this.mushroom.state = "walking_right";
 
+        if (this.mushroom.state === "walking_right") {
+            this.mushroom.setVelocityX(LevelZero.VELOCITY / 4)
+            this.mushroom.flipX = false;
+        }
+        else if (this.mushroom.state === "walking_left") {
+            this.mushroom.setVelocityX(-LevelZero.VELOCITY / 4)
+            this.mushroom.flipX = true;
+        }
 
-        if (this.player.body.velocity.y > 0)
-            this.player.state = "falling";
-        if (this.player.y > 1280)
+    }
+
+    jump(vely: number): void {
+        this.player.setVelocityY(-vely);
+    }
+
+    jumpingOnMushroom(): void {
+        this.jump(500);
+        this.mushroom.state = "crushed";
+        this.time.addEvent({ delay: 300, callback: this.stopCrush, callbackScope: this, loop: false })
+    }
+
+    stopCrush(): any {
+        this.mushroom.state = this.mushroom.flipX ? "walking_left" : "walking_right";
+    }
+
+    playerDie(): void {
+        this.player.state = "dying";
+        this.player.on('animationcomplete', () => {
             this.scene.restart({ life: this.nbrLife - 1, notFirst: true });
-        else if (this.player.state === "sliding") {
-            if (this.player.flipX)
-                this.player.setVelocityX(-LevelZero.VELOCITY)
+        })
+    }
+
+    update(): void {
+        this.animation();
+        this.player.state = this.getPlayerState();
+        this.updatePlayerPositionText(this.player.x, this.player.y);
+
+        if (this.player.state !== "dying") {
+            this.mushroomMovements();
+
+            if (this.player.y > 1280)
+                this.playerDie();
+            else if (this.player.state === "sliding") {
+                if (this.player.flipX)
+                    this.player.setVelocityX(-LevelZero.VELOCITY)
+                else
+                    this.player.setVelocityX(LevelZero.VELOCITY)
+            }
+            else if ((this.cursors.space.isDown || this.cursors.up.isDown) && this.player.body.onFloor())
+                // jump up
+                this.jump(400);
+            else if (Phaser.Input.Keyboard.JustDown(this.downKey) && this.player.body.onFloor()) {
+                this.player.state = "sliding";
+                this.time.addEvent({ delay: 400, callback: this.stopSliding, callbackScope: this, loop: false })
+            }
+            else if (this.cursors.left.isDown) // if the left arrow key is down
+            {
+                this.player.setVelocityX(-LevelZero.VELOCITY); // move left
+                this.player.flipX = true; // flip the sprite to the left
+            }
+            else if (this.cursors.right.isDown) // if the right arrow key is down
+            {
+                this.player.setVelocityX(LevelZero.VELOCITY); // move right
+                this.player.flipX = false; // use the original sprite looking to    the right
+            }
             else
-                this.player.setVelocityX(LevelZero.VELOCITY)
+                this.player.setVelocityX(0);
+
+            // handling collision between enemy and hero
+            this.physics.world.collide(this.player, this.mushroom, (hero, mushroom) => {
+                if (mushroom.body.touching.up && hero.body.touching.down)
+                    this.jumpingOnMushroom();
+                else
+                    this.player.state = "dying";
+            });
         }
-        else if ((this.cursors.space.isDown || this.cursors.up.isDown) && this.player.body.onFloor()) {
-            this.player.state = "jumping";
-            this.player.setVelocityY(-400); // jump up
-        }
-        else if (Phaser.Input.Keyboard.JustDown(this.downKey) && this.player.body.onFloor()) {
-            this.player.state = "sliding";
-            this.time.addEvent({ delay: 400, callback: this.stopSliding, callbackScope: this, loop: false })
-        }
-        else if (this.cursors.left.isDown) // if the left arrow key is down
-        {
-            this.player.setVelocityX(-LevelZero.VELOCITY); // move left
-            if (this.player.body.onFloor())
-                this.player.state = "running"; // play run animation
-            this.player.flipX = true; // flip the sprite to the left
-        }
-        else if (this.cursors.right.isDown) // if the right arrow key is down
-        {
-            this.player.setVelocityX(LevelZero.VELOCITY); // move right
-            if (this.player.body.onFloor())
-                this.player.state = "running"; // play run animation
-            this.player.flipX = false; // use the original sprite looking to    the right
-        }
-        else {
-            this.player.setVelocityX(0);
-            if (this.player.body.onFloor())
-                this.player.state = "idling";
-        }
+
+
+
     }
 }
