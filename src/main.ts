@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import LevelZero from './scenes/LevelZero';
+import Menu from './scenes/Menu';
 
 const WIDTH = 620;
 const HEIGHT = 320;
@@ -14,6 +15,7 @@ const config: Phaser.Types.Core.GameConfig = {
 	type: Phaser.AUTO,
 	width: WIDTH,
 	height: HEIGHT,
+	parent: "menkounGame",
 	scale: {
 		// Fit to window
 		mode: Phaser.Scale.FIT,
@@ -26,11 +28,11 @@ const config: Phaser.Types.Core.GameConfig = {
 		default: 'arcade',
 		arcade: {
 			gravity: { y: 800 },
-			debug: true
+			// debug: true
 		}
 
 	},
-	scene: [LevelZero]
+	scene: [Menu,LevelZero]
 }
 
 export default new Phaser.Game(config)

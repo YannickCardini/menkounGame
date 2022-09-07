@@ -19,7 +19,7 @@ export default class LevelZero extends Phaser.Scene {
     stopAnimation: boolean;
 
     constructor() {
-        super('hello-world');
+        super('LevelZero');
     }
 
     preload() {
@@ -93,7 +93,7 @@ export default class LevelZero extends Phaser.Scene {
         this.physics.add.collider(this.groundLayer, this.player);
 
         // set bounds so the camera won't go outside the game world
-        this.cameras.main.setBounds(32, 0, this.map.widthInPixels - 64, this.map.heightInPixels);
+        this.cameras.main.setBounds(32, 0, this.map.widthInPixels - 64, this.map.heightInPixels - 96);
         // make the camera follow the player
         this.cameras.main.startFollow(this.player);
         this.cameras.main.fadeIn(2000);
@@ -150,7 +150,7 @@ export default class LevelZero extends Phaser.Scene {
         })
 
         this.time.addEvent({ delay: 500, callback: this.delayDone, callbackScope: this, loop: false })
-        this.debugPlayerPositionText = this.add.text(30, 30, this.player.x + " , " + this.player.y, { color: "black" }).setScrollFactor(0)
+        // this.debugPlayerPositionText = this.add.text(30, 30, this.player.x + " , " + this.player.y, { color: "black" }).setScrollFactor(0)
     }
 
     update(): void {
@@ -293,7 +293,7 @@ export default class LevelZero extends Phaser.Scene {
     }
 
     updatePlayerPositionText(x: number, y: number): void {
-        this.debugPlayerPositionText.setText("x: " + x + " , y:" + y + "\n Player State: " + this.player.state);
+        // this.debugPlayerPositionText.setText("x: " + x + " , y:" + y + "\n Player State: " + this.player.state);
     }
 
 }
