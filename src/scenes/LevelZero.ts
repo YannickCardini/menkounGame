@@ -1,4 +1,5 @@
 import Phaser, { NONE, Physics, Tilemaps } from 'phaser'
+import { Bestiaire, BestiaireConfig } from '~/class/Bestiaire';
 import { Mushroom, MushroomConfig } from '~/class/Mushroom';
 import { TweenHelper } from '~/class/TweenHelper';
 
@@ -7,7 +8,7 @@ export default class LevelZero extends Phaser.Scene {
     map: Tilemaps.Tilemap;
     groundLayer: Tilemaps.TilemapLayer;
     player: Physics.Arcade.Sprite;
-    mushroom: Mushroom;
+    mushrooms: Array<Mushroom>;
     static readonly SCALE: number = 0.5;
     cursors: Phaser.Types.Input.Keyboard.CursorKeys;
     static readonly VELOCITY: number = 200;
@@ -73,24 +74,23 @@ export default class LevelZero extends Phaser.Scene {
         this.physics.world.bounds.width = this.groundLayer.width;
         this.physics.world.bounds.height = this.groundLayer.height;
 
-        let config: MushroomConfig = {
+        let config: BestiaireConfig = {
             scene: this,
             x: 730,
             y: 1055,
             state: "walking_right",
             walkingRangeX1: 600,
-            walkingRangeX2: 900
+            walkingRangeX2: 900,
+            ground: this.groundLayer
         }
 
         // create the mushroom sprite    
-        this.mushroom = new Mushroom(config);
-        
+        this.mushrooms = [new Mushroom(config), new Mushroom({ scene: this, x: 300, y: 1100, walkingRangeX1: 200, walkingRangeX2: 430, ground: this.groundLayer })];
 
         // create the player sprite    
         this.player = this.physics.add.sprite(200, 700, 'cat').setScale(LevelZero.SCALE);
 
         this.physics.add.collider(this.groundLayer, this.player);
-        this.physics.add.collider(this.groundLayer, this.mushroom);
 
         // set bounds so the camera won't go outside the game world
         this.cameras.main.setBounds(32, 0, this.map.widthInPixels - 64, this.map.heightInPixels);
@@ -153,27 +153,18 @@ export default class LevelZero extends Phaser.Scene {
         this.debugPlayerPositionText = this.add.text(30, 30, this.player.x + " , " + this.player.y, { color: "black" }).setScrollFactor(0)
     }
 
-    delayDone(): void {
-        this.player.body.setSize(this.player.width - 80, this.player.height - 3, true);
-    }
+    update(): void {
+        if (!this.stopAnimation)
+            this.animation();
 
-    updatePlayerPositionText(x: number, y: number): void {
-        this.debugPlayerPositionText.setText("x: " + x + " , y:" + y + "\n Player State: " + this.player.state);
-    }
-
-    stopSliding(): void {
-        this.player.state = "idling";
-        this.player.setAccelerationX(0);
-    }
-
-    createLifeStatus(data: { life: number, notFirst: boolean }) {
-        this.nbrLife = data.life !== undefined ? data.life : 3;
-        const lifeImg = this.add.image(20, 20, 'life').setScrollFactor(0);
-        const style: Phaser.Types.GameObjects.Text.TextStyle = { font: "12pt Courier", color: "#ffb000", strokeThickness: 1, stroke: "#000000" }
-        const lifeText = this.add.text(35, 12, "x" + this.nbrLife.toString(), style).setScrollFactor(0);
-        if (data.notFirst) {
-            TweenHelper.flashElement(this, lifeText);
-            TweenHelper.flashElement(this, lifeImg);
+        if (this.player.state !== "dying") {
+            this.player.state = this.getPlayerState();
+            this.updatePlayerPositionText(this.player.x, this.player.y);
+            this.playerControls();
+            this.mushrooms.forEach(mush => mush.update());
+            this.playerCollide();
+            if (this.player.y > 1280)
+                this.playerDie();
         }
     }
 
@@ -203,16 +194,23 @@ export default class LevelZero extends Phaser.Scene {
             default:
                 this.player.anims.play("idle", true);;
         };
-        switch (this.mushroom.state) {
-            case "crushed":
-                this.mushroom.anims.play("mushroom_crush", true);
-                break;
+    }
 
-            default:
-                this.mushroom.anims.play("mushroom_walk", true);
-                break;
+    createLifeStatus(data: { life: number, notFirst: boolean }) {
+        this.nbrLife = data.life !== undefined ? data.life : 3;
+        const lifeImg = this.add.image(20, 20, 'life').setScrollFactor(0);
+        const style: Phaser.Types.GameObjects.Text.TextStyle = { font: "12pt Courier", color: "#ffb000", strokeThickness: 1, stroke: "#000000" }
+        const lifeText = this.add.text(35, 12, "x" + this.nbrLife.toString(), style).setScrollFactor(0);
+        if (data.notFirst) {
+            TweenHelper.flashElement(this, lifeText);
+            TweenHelper.flashElement(this, lifeImg);
         }
     }
+
+    delayDone(): void {
+        this.player.body.setSize(this.player.width - 80, this.player.height - 3, true);
+    }
+
 
     getPlayerState(): string {
         if (this.player.state === "sliding" || this.player.state === "dying")
@@ -231,17 +229,24 @@ export default class LevelZero extends Phaser.Scene {
         }
     }
 
-    playerDie(): void {
-        this.cameras.main.fadeOut(2000);
-        this.player.state = "dying";
-        this.mushroom.setVelocityX(0);
-        this.player.setVelocity(0,0);
-        this.player.on("animationcomplete", () => {
-            this.stopAnimation = true;
-        })
-        this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, (cam, effect) => {
-            this.scene.restart({ life: this.nbrLife - 1, notFirst: true });
-        })
+    playerCollide(): void {
+        for (let i = 0; i < this.mushrooms.length; i++) {
+            const mushroom = this.mushrooms[i];
+            // handling collision between enemy and hero
+            if (mushroom.state !== "dying")
+                this.physics.world.collide(this.player, mushroom, (hero) => {
+                    if (mushroom.body.touching.up && hero.body.touching.down) {
+                        this.player.setVelocityY(-500);
+                        mushroom.jumpOnMushroom();
+                    }
+                    else {
+                        if (this.player.state === "sliding")
+                            mushroom.die();
+                        else
+                            this.playerDie();
+                    }
+                });
+        }
     }
 
     playerControls(): void {
@@ -271,27 +276,25 @@ export default class LevelZero extends Phaser.Scene {
             this.player.setVelocityX(0);
     }
 
-    update(): void {
-        if(!this.stopAnimation)
-            this.animation();
-
-        if (this.player.state !== "dying") {
-            this.player.state = this.getPlayerState();
-            this.updatePlayerPositionText(this.player.x, this.player.y);
-            this.mushroom.mushroomMovements();
-            this.playerControls();
-            if (this.player.y > 1280)
-                this.playerDie();
-            // handling collision between enemy and hero
-            this.physics.world.collide(this.player, this.mushroom, (hero, mushroom) => {
-                if (mushroom.body.touching.up && hero.body.touching.down){
-                    this.player.setVelocityY(-500);
-                    this.mushroom.jumpOnMushroom();
-                }
-                else
-                    this.playerDie();
-            });
-
-        }
+    playerDie(): void {
+        this.cameras.main.fadeOut(2000);
+        this.player.state = "dying";
+        this.mushrooms.forEach(mush=>mush.playerDie())
+        this.player.setVelocity(0, 0);
+        this.player.on("animationcomplete", () => this.stopAnimation = true)
+        this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, (cam, effect) => {
+            this.scene.restart({ life: this.nbrLife - 1, notFirst: true });
+        })
     }
+
+    stopSliding(): void {
+        this.player.state = "idling";
+        this.player.setAccelerationX(0);
+    }
+
+    updatePlayerPositionText(x: number, y: number): void {
+        this.debugPlayerPositionText.setText("x: " + x + " , y:" + y + "\n Player State: " + this.player.state);
+    }
+
 }
+
