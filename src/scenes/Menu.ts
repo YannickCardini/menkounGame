@@ -26,6 +26,10 @@ export default class Menu extends Phaser.Scene {
         this.load.bitmapFont('ice', 'assets/menu/iceicebaby.png', 'assets/menu/iceicebaby.xml');
         this.load.video('demo', 'assets/menu/galaxy.mp4');
         this.load.atlas('cat', 'assets/cat-0.png', 'assets/cat.json');
+        this.load.image('clouds', 'assets/menu/clouds.png');
+        this.load.image('poteau', 'assets/menu/poteau.png')
+        this.load.image('light', 'assets/menu/light.png');
+        this.load.image('ground','assets/menu/menu_ground.png')
 
     }
 
@@ -35,15 +39,54 @@ export default class Menu extends Phaser.Scene {
 
 
 
-        var vid = this.add.video(310, 160, 'demo');
+        // var vid = this.add.video(310, 160, 'demo');
 
-        vid.play(true);
-        
-        // Prevents video freeze when game is out of focus (i.e. user changes tab on the browser)
-        vid.setPaused(false);
+        // vid.play(true);
 
-        this.player = this.physics.add.sprite(60, 280, 'cat').setScale(0.5)
+        // // Prevents video freeze when game is out of focus (i.e. user changes tab on the browser)
+        // vid.setPaused(false);
+
+        var clouds = this.add.image(500, 32, 'clouds').setOrigin(0);
+
+        this.tweens.add({
+            targets: clouds,
+            x: -1250,
+            ease: 'Linear',
+            duration: 400000,
+            repeat: -1
+        });
+
+        var ground = this.add.image(width/2,height/2,'ground')
+        ground.setPipeline('Light2D');
+
+        var pic = this.add.image(100, 240, 'poteau');
+        pic.setPipeline('Light2D');
+
+        //  The 3 lights
+        var dummy = this.add.image(114, 226, 'light').setVisible(false);
+
+        var light1 = this.lights.addLight(114, 226, 10000, 0xffffff, 1);
+        var ellipse1 = new Phaser.Geom.Ellipse(light1.x, light1.y, 10, 15);
+
+
+        this.time.addEvent({
+            delay: 100,
+            callback: function ()
+            {
+                Phaser.Geom.Ellipse.Random(ellipse1, light1);
+            },
+            callbackScope: this,
+            repeat: -1
+        });
+
+        // We must enable the light system. By default is disabled
+        this.lights.enable();
+
+
+
+        this.player = this.physics.add.sprite(60, 260, 'cat').setScale(0.5)
         this.player.body.setAllowGravity(false)
+        this.player.setPipeline('Light2D')
 
         this.anims.create({
             key: "walk",
@@ -52,32 +95,32 @@ export default class Menu extends Phaser.Scene {
             repeat: -1
         });
 
-
-        const noTintText = this.add.bitmapText(48, 110, 'ice', 'MENKOUN.FR', 56);
-        const tintedText = this.add.bitmapText(48, 165, 'ice', 'THE GAME', 56);
+        const noTintText = this.add.bitmapText(48, 60, 'ice', 'MENKOUN.FR', 56);
+        const tintedText = this.add.bitmapText(noTintText.x, noTintText.y + 50, 'ice', 'THE GAME', 56);
+        // tintedText.setPipeline('Light2D')
 
         tintedText.setTint(0xff00ff, 0xffff00, 0x00ff00, 0xff0000);
 
         // Play button
         const playButton = this.add.image(width * 0.8, height * 0.3, 'metal-panel')
-            .setDisplaySize(150, 50)
+            .setDisplaySize(150, 50).setInteractive({ cursor: 'pointer' });
 
         this.add.bitmapText(playButton.x, playButton.y, 'ice', 'Jouer', this.fontSize).setTint(0xff00ff, 0xffff00, 0x00ff00, 0xff0000)
-            .setOrigin(0.5,0.42)
+            .setOrigin(0.5, 0.42)
 
         // Settings button
         const donnerButton = this.add.image(playButton.x, playButton.y + playButton.displayHeight + 10, 'metal-panel')
-            .setDisplaySize(150, 50)
+            .setDisplaySize(150, 50).setInteractive({ cursor: 'pointer' })
 
         this.add.bitmapText(donnerButton.x, donnerButton.y, 'ice', 'Donner', this.fontSize).setTint(0xff00ff, 0xffff00, 0x00ff00, 0xff0000)
-            .setOrigin(0.5,0.42)
+            .setOrigin(0.5, 0.42)
 
         // Credits button
         const adoptButton = this.add.image(donnerButton.x, donnerButton.y + donnerButton.displayHeight + 10, 'metal-panel')
-            .setDisplaySize(150, 50)
+            .setDisplaySize(150, 50).setInteractive({ cursor: 'pointer' });
 
         this.add.bitmapText(adoptButton.x, adoptButton.y, 'ice', 'Adopter', this.fontSize).setTint(0xff00ff, 0xffff00, 0x00ff00, 0xff0000)
-            .setOrigin(0.5,0.42)
+            .setOrigin(0.5, 0.42)
 
         this.buttons.push(playButton)
         this.buttons.push(donnerButton)
@@ -91,11 +134,26 @@ export default class Menu extends Phaser.Scene {
         })
 
         donnerButton.on('selected', () => {
-            tintedText.setText('/poster\n-une-annonce')
+            tintedText.setText('/donation')
         })
 
         adoptButton.on('selected', () => {
             tintedText.setText('/adoption')
+        })
+
+        playButton.on('pointerover', () => {
+            tintedText.setText('THE GAME')
+            this.selectButton(0)
+        })
+
+        donnerButton.on('pointerover', () => {
+            tintedText.setText('/donation')
+            this.selectButton(1)
+        })
+
+        adoptButton.on('pointerover', () => {
+            tintedText.setText('/adoption')
+            this.selectButton(2)
         })
 
         playButton.on('confirm', () => {
@@ -111,10 +169,23 @@ export default class Menu extends Phaser.Scene {
             location.href = 'https://menkoun.fr/adoption'
         })
 
+        this.input.on('pointerup', (pointer) => {
+
+            this.confirmSelection();
+
+        }, this);
+
         this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+            playButton.off('pointerover')
+            donnerButton.off('pointerover')
+            adoptButton.off('pointerover')
             playButton.off('selected')
             donnerButton.off('selected')
             adoptButton.off('selected')
+            playButton.off('confirm')
+            donnerButton.off('confirm')
+            adoptButton.off('confirm')
+
 
         })
 
@@ -176,8 +247,9 @@ export default class Menu extends Phaser.Scene {
         else if (downJustPressed) {
             this.selectNextButton(1)
         }
-        else if (spaceJustPressed) {
+        else if (spaceJustPressed ) {
             this.confirmSelection()
         }
+        console.log(this.input.mousePointer.x,this.input.mousePointer.y)
     }
 }
