@@ -283,7 +283,10 @@ export default class LevelZero extends Phaser.Scene {
         this.player.setVelocity(0, 0);
         this.player.on("animationcomplete", () => this.stopAnimation = true)
         this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, (cam, effect) => {
-            this.scene.restart({ life: this.nbrLife - 1, notFirst: true });
+            if(this.nbrLife === 0)
+                this.scene.start('menu');
+            else
+                this.scene.restart({ life: this.nbrLife - 1, notFirst: true });
         })
     }
 
