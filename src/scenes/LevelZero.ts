@@ -1,5 +1,6 @@
 import Phaser, { NONE, Physics, Tilemaps } from 'phaser'
 import { Bestiaire, BestiaireConfig } from '~/class/Bestiaire';
+import { Bird } from '~/class/Bird';
 import { Mushroom } from '~/class/Mushroom';
 import { TweenHelper } from '~/class/TweenHelper';
 
@@ -8,7 +9,7 @@ export default class LevelZero extends Phaser.Scene {
     map: Tilemaps.Tilemap;
     groundLayer: Tilemaps.TilemapLayer;
     player: Physics.Arcade.Sprite;
-    mushrooms: Array<Mushroom>;
+    beasts: Array<Array<Bestiaire>>;
     static readonly SCALE: number = 0.5;
     cursors: Phaser.Types.Input.Keyboard.CursorKeys;
     static readonly VELOCITY: number = 200;
@@ -37,6 +38,8 @@ export default class LevelZero extends Phaser.Scene {
         this.load.atlas('cat', 'assets/cat-0.png', 'assets/cat.json');
         // mushroom animations
         this.load.atlas('mushroom', 'assets/mushroom.png', 'assets/mushroom.json');
+        // bird animations
+        this.load.atlas('bird', 'assets/bird.png', 'assets/bird.json');
         // Decorations
         this.load.image('decor', 'assets/decor.png');
     }
@@ -78,15 +81,17 @@ export default class LevelZero extends Phaser.Scene {
             scene: this,
             x: 730,
             y: 1055,
-            state: "walking_right",
-            walkingRangeX1: 600,
-            walkingRangeX2: 900,
+            state: "moving_right",
+            movingRangeX1: 600,
+            movingRangeX2: 900,
             ground: this.groundLayer
         }
 
         // create the mushroom sprite    
-        this.mushrooms = [new Mushroom(config), new Mushroom({ scene: this, x: 300, y: 1100, walkingRangeX1: 200, walkingRangeX2: 430, ground: this.groundLayer })];
+        let mushrooms = [new Mushroom(config), new Mushroom({ scene: this, x: 3000, y: 1100, movingRangeX1: 200, movingRangeX2: 430, ground: this.groundLayer })];
+        let birds = [new Bird({ scene: this, x: 900, y: 1050, movingRangeX1: -500, movingRangeX2: 900 })]
 
+        this.beasts = [mushrooms, birds]
         // create the player sprite    
         this.player = this.physics.add.sprite(200, 700, 'cat').setScale(LevelZero.SCALE);
 
@@ -161,7 +166,9 @@ export default class LevelZero extends Phaser.Scene {
             this.player.state = this.getPlayerState();
             this.updatePlayerPositionText(this.player.x, this.player.y);
             this.playerControls();
-            this.mushrooms.forEach(mush => mush.update());
+            this.beasts.forEach(beasts => {
+                beasts.forEach(beast => beast.update());
+            });
             this.playerCollide();
             if (this.player.y > 1280)
                 this.playerDie();
@@ -230,22 +237,26 @@ export default class LevelZero extends Phaser.Scene {
     }
 
     playerCollide(): void {
-        for (let i = 0; i < this.mushrooms.length; i++) {
-            const mushroom = this.mushrooms[i];
-            // handling collision between enemy and hero
-            if (mushroom.state !== "dying")
-                this.physics.world.collide(this.player, mushroom, (hero) => {
-                    if (mushroom.body.touching.up && hero.body.touching.down) {
-                        this.player.setVelocityY(-500);
-                        mushroom.jumpOnMushroom();
-                    }
-                    else {
-                        if (this.player.state === "sliding")
-                            mushroom.die();
-                        else
-                            this.playerDie();
-                    }
-                });
+        for (let j = 0; j < this.beasts.length; j++) {
+            const beasts = this.beasts[j];
+            for (let i = 0; i < beasts.length; i++) {
+                const beast = beasts[i];
+                // handling collision between enemy and hero
+                if (beast.state !== "dying")
+                    this.physics.world.collide(this.player, beast, (hero) => {
+                        console.log('touching')
+                        if (beast instanceof Mushroom && beast.body.touching.up && hero.body.touching.down) {
+                            this.player.setVelocityY(-500);
+                            beast.jumpOnMushroom();
+                        }
+                        else {
+                            if (this.player.state === "sliding")
+                                beast.die();
+                            else
+                                this.playerDie();
+                        }
+                    });
+            }
         }
     }
 
@@ -279,11 +290,13 @@ export default class LevelZero extends Phaser.Scene {
     playerDie(): void {
         this.cameras.main.fadeOut(2000);
         this.player.state = "dying";
-        this.mushrooms.forEach(mush=>mush.playerDie())
+        this.beasts.forEach(beasts => {
+            beasts.forEach(beast => beast.playerDie())
+        })
         this.player.setVelocity(0, 0);
         this.player.on("animationcomplete", () => this.stopAnimation = true)
         this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, (cam, effect) => {
-            if(this.nbrLife === 0)
+            if (this.nbrLife === 0)
                 this.scene.start('menu');
             else
                 this.scene.restart({ life: this.nbrLife - 1, notFirst: true });

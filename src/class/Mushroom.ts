@@ -58,7 +58,7 @@ export class Mushroom extends Bestiaire {
     }
 
     stopCrush(): void {
-        this.state = this.flipX ? "walking_left" : "walking_right";
+        this.state = this.flipX ? "moving_left" : "moving_right";
     }
 
     update(...args: any[]): void {

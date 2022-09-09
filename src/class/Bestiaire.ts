@@ -12,10 +12,10 @@ export interface BestiaireConfig {
     x: number,
     y: number,
     state?: string,
-    walkingRangeX1: number,
-    walkingRangeX2: number,
+    movingRangeX1: number,
+    movingRangeX2: number,
     hitbox?: hitbox,
-    ground: Tilemaps.TilemapLayer
+    ground?: Tilemaps.TilemapLayer
 }
 
 
@@ -33,30 +33,31 @@ export class Bestiaire extends Physics.Arcade.Sprite {
 
         this.config = config;
 
-        this.state = config.state ? config.state :"walking_right";
+        this.state = config.state ? config.state :"moving_right";
 
-        this.collider = config.scene.physics.add.collider(config.ground, this);
+        if(config.ground)
+            this.collider = config.scene.physics.add.collider(config.ground, this);
 
         config.scene.time.addEvent({ delay: 500, callback: this.delayDone, callbackScope: this, loop: false });
 
     }
 
-    beastMovements(): void {
-        let x1= this.config.walkingRangeX1;
-        let x2= this.config.walkingRangeX2;
-        let walkSpeed = 50;
+    beastMovements(speed = 50): void {
+        let x1= this.config.movingRangeX1;
+        let x2= this.config.movingRangeX2;
+        let moveSpeed = speed;
         
-        if (this.x > x2 && this.state === "walking_right")
-            this.state = "walking_left";
-        else if (this.x < x1 && this.state === "walking_left")
-            this.state = "walking_right";
+        if (this.x > x2 && this.state === "moving_right")
+            this.state = "moving_left";
+        else if (this.x < x1 && this.state === "moving_left")
+            this.state = "moving_right";
 
-        if (this.state === "walking_right") {
-            this.setVelocityX(walkSpeed)
+        if (this.state === "moving_right") {
+            this.setVelocityX(moveSpeed)
             this.flipX = false;
         }
-        else if (this.state === "walking_left") {
-            this.setVelocityX(-walkSpeed)
+        else if (this.state === "moving_left") {
+            this.setVelocityX(-moveSpeed)
             this.flipX = true;
         }
     }
@@ -73,9 +74,11 @@ export class Bestiaire extends Physics.Arcade.Sprite {
 
     die(): void{
         this.state = "dying";
+        (this.body as Phaser.Physics.Arcade.Body).allowGravity = true;
         this.setVelocityY(-250);
         this.setVelocityX(0);
-        this.collider.active = false;
+        if(this.collider)
+            this.collider.active = false;
         this.config.scene.time.addEvent({ delay: 1500, callback: this.destroy, callbackScope: this, loop: false });
     }
 
