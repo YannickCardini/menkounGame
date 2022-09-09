@@ -22,7 +22,7 @@ export interface BestiaireConfig {
 export class Bestiaire extends Physics.Arcade.Sprite {
 
     config: BestiaireConfig;
-    collider: any;
+    collider: Physics.Arcade.Collider;
 
     constructor(config: BestiaireConfig, atlas: string) {
 
