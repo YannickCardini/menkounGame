@@ -138,7 +138,7 @@ export default class Menu extends Phaser.Scene {
         })
 
         donnerButton.on('confirm', () => {
-            location.href = 'https://menkoun.fr/poster-une-annonce'
+            location.href = 'https://menkoun.fr/donation'
         })
 
         adoptButton.on('confirm', () => {

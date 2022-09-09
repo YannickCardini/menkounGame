@@ -1,6 +1,6 @@
 import Phaser, { NONE, Physics, Tilemaps } from 'phaser'
 import { Bestiaire, BestiaireConfig } from '~/class/Bestiaire';
-import { Mushroom, MushroomConfig } from '~/class/Mushroom';
+import { Mushroom } from '~/class/Mushroom';
 import { TweenHelper } from '~/class/TweenHelper';
 
 export default class LevelZero extends Phaser.Scene {
