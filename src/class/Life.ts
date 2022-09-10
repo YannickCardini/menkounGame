@@ -7,6 +7,7 @@ export class Life extends Phaser.GameObjects.Image {
     y1: number;
     y2: number;
     scene: Scene;
+    nbrLife: number;
 
     constructor(scene: Scene, x: number, y: number) {
         super(scene, x, y, 'life');
@@ -25,21 +26,32 @@ export class Life extends Phaser.GameObjects.Image {
 
     disappearEffect(): void {
 
-        this.setVisible(false);
+        let nbrLife = this.scene.registry.get('nbrLife');
+        this.scene.registry.set('nbrLife', nbrLife + 1);
+        this.setScrollFactor(0)
+        this.setX(this.x - this.scene.cameras.main.worldView.x)
+        this.setY(this.y - this.scene.cameras.main.worldView.y)
 
-        let sprite = this.scene.add.sprite(this.x, this.y, "disappear")
+        this.scene.tweens.add({targets: this, scale: 0.7, duration: 200, ease: 'Linear',  onComplete: ()=>{
+            this.scene.tweens.add({ targets: this, x: 20, y: 20, scale: 0.3, duration: 500, ease: 'Linear', onComplete: () => { this.destroy() } });
+        }})
 
-        this.scene.anims.create({
-            key: "boom",
-            frames: this.scene.anims.generateFrameNames('disappear', { prefix: 'c1_boom', start: 1, end: 3, zeroPad: 2 }),
-            frameRate: 7,
-        });
 
-        sprite.anims.play("boom", true);
-        sprite.on("animationcomplete", () => {
-            sprite.destroy();
-            this.destroy();
-        })
+        // this.setVisible(false);
+
+        // let sprite = this.scene.add.sprite(this.x, this.y, "disappear")
+
+        // this.scene.anims.create({
+        //     key: "boom",
+        //     frames: this.scene.anims.generateFrameNames('disappear', { prefix: 'c1_boom', start: 1, end: 3, zeroPad: 2 }),
+        //     frameRate: 7,
+        // });
+
+        // sprite.anims.play("boom", true);
+        // sprite.on("animationcomplete", () => {
+        //     sprite.destroy();
+        //     this.destroy();
+        // })
 
     }
 

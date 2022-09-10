@@ -15,13 +15,19 @@ export default class LevelZero extends Phaser.Scene {
     // static readonly SCALE: number = 0.5;
     cursors: Phaser.Types.Input.Keyboard.CursorKeys;
     static readonly backgroundLayersStart: number = 4;
-    nbrLife: number;
     debugPlayerPositionText: Phaser.GameObjects.Text;
     lifes: Array<Life>;
+    lifeImg: Phaser.GameObjects.Image;
+    lifeText: Phaser.GameObjects.Text;
 
 
     constructor() {
         super('LevelZero');
+
+    }
+
+    init(){
+
     }
 
     preload() {
@@ -38,7 +44,7 @@ export default class LevelZero extends Phaser.Scene {
         this.load.atlas('cat', 'assets/cat-0.png', 'assets/cat.json');
         // mushroom animations
         this.load.atlas('mushroom', 'assets/mushroom.png', 'assets/mushroom.json');
-        this.load.atlas('disappear','assets/disappear.png','assets/disappear.json')
+        this.load.atlas('disappear', 'assets/disappear.png', 'assets/disappear.json')
 
         // bird animations
         this.load.atlas('bird', 'assets/bird.png', 'assets/bird.json');
@@ -46,8 +52,11 @@ export default class LevelZero extends Phaser.Scene {
         this.load.image('decor', 'assets/decor.png');
     }
 
-    create(data: { notFirst: boolean; life: number; }) {
+    create(data: {skipRegistry: boolean}) {
 
+        //  Create the nbr of life in the Registry if first time
+        if(data.skipRegistry === undefined){}
+            this.registry.set('nbrLife', 3);
         // // Create background layers
         for (let i = 11; i > (LevelZero.backgroundLayersStart - 1); i--)
             this.add.image(1018, 1040, 'background-' + i).setScrollFactor(2 / i, 1);
@@ -56,7 +65,7 @@ export default class LevelZero extends Phaser.Scene {
         this.add.image(1030, 736, 'decor');
 
         // Add life counter at the top left corner
-        this.createLifeStatus(data);
+        this.registry.events.on('changedata', this.updateLifeStatus, this);
 
         const tilemapConfig: Phaser.Types.Tilemaps.TilemapConfig = {
             key: "map",
@@ -108,12 +117,16 @@ export default class LevelZero extends Phaser.Scene {
 
         this.lifes = [new Life(this, 300, 1000), new Life(this, 100, 1100)]
 
+        const style: Phaser.Types.GameObjects.Text.TextStyle = { font: "12pt Courier", color: "#ffb000", strokeThickness: 1, stroke: "#000000" }
+        console.log(this.registry.get('nbrLife'))
+        this.lifeImg = this.add.image(20, 20, 'life').setScrollFactor(0).setScale(0.3);
+        this.lifeText = this.add.text(35, 12, "x" + this.registry.get('nbrLife').toString(), style).setScrollFactor(0);
+
 
     }
 
     update(): void {
         this.player.update();
-
         if (this.player.state !== "dying") {
             this.lifes.forEach(life => { life.update(this.player); });
             this.beasts.forEach(beasts => {
@@ -128,31 +141,31 @@ export default class LevelZero extends Phaser.Scene {
 
     playerDie(): void {
         this.cameras.main.fadeOut(2000);
+        this.registry.events.off('changedata');
         this.player.die();
         this.beasts.forEach(beasts => {
             beasts.forEach(beast => beast.playerDie())
         })
+        let nbrLife = this.registry.get('nbrLife');
+        this.registry.set('nbrLife', nbrLife-1)
+
         this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, (cam, effect) => {
-            if (this.nbrLife === 0)
+
+            if (nbrLife < 0)
                 this.scene.start('menu');
-            else
-                this.scene.restart({ life: this.nbrLife - 1, notFirst: true });
+            else {
+                this.scene.restart({skipRegistry:true});
+            }
         })
     }
 
-    createLifeStatus(data: { life: number, notFirst: boolean }) {
-        this.nbrLife = data.life !== undefined ? data.life : 3;
-        const lifeImg = this.add.image(20, 20, 'life').setScrollFactor(0).setScale(0.3);
-        const style: Phaser.Types.GameObjects.Text.TextStyle = { font: "12pt Courier", color: "#ffb000", strokeThickness: 1, stroke: "#000000" }
-        const lifeText = this.add.text(35, 12, "x" + this.nbrLife.toString(), style).setScrollFactor(0);
-        if (data.notFirst) {
-            TweenHelper.flashElement(this, lifeText);
-            TweenHelper.flashElement(this, lifeImg);
-        }
+    updateLifeStatus(parent, key, data) {
+        this.lifeText.setText("x" + data.toString());
+        TweenHelper.flashElement(this, this.lifeText);
+        TweenHelper.flashElement(this, this.lifeImg);;
     }
 
     playerCollide(): void {
-
         for (let j = 0; j < this.beasts.length; j++) {
             const beasts = this.beasts[j];
             for (let i = 0; i < beasts.length; i++) {
