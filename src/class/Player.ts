@@ -169,6 +169,7 @@ export class Player extends Physics.Arcade.Sprite {
     }
 
     update(...args: any[]): void {
+        // let R = this.scene.add.rectangle(this.body.x+this.body.width/2, this.body.y+this.body.height/2, this.body.width, this.body.height).setStrokeStyle(2, 0x1a65ac);
         if (!this.stopAnimation)
             this.animation();
         if (this.state !== "dying") {

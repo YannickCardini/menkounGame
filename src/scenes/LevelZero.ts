@@ -1,6 +1,7 @@
 import Phaser, { NONE, Physics, Tilemaps } from 'phaser'
 import { Bestiaire, BestiaireConfig } from '~/class/Bestiaire';
 import { Bird } from '~/class/Bird';
+import { Life } from '~/class/Life';
 import { Mushroom } from '~/class/Mushroom';
 import { Player } from '~/class/Player';
 import { TweenHelper } from '~/class/TweenHelper';
@@ -16,6 +17,8 @@ export default class LevelZero extends Phaser.Scene {
     static readonly backgroundLayersStart: number = 4;
     nbrLife: number;
     debugPlayerPositionText: Phaser.GameObjects.Text;
+    lifes: Array<Life>;
+
 
     constructor() {
         super('LevelZero');
@@ -35,6 +38,8 @@ export default class LevelZero extends Phaser.Scene {
         this.load.atlas('cat', 'assets/cat-0.png', 'assets/cat.json');
         // mushroom animations
         this.load.atlas('mushroom', 'assets/mushroom.png', 'assets/mushroom.json');
+        this.load.atlas('disappear','assets/disappear.png','assets/disappear.json')
+
         // bird animations
         this.load.atlas('bird', 'assets/bird.png', 'assets/bird.json');
         // Decorations
@@ -88,7 +93,7 @@ export default class LevelZero extends Phaser.Scene {
 
         this.beasts = [mushrooms, birds]
         // create the player sprite    
-        this.player = new Player({ scene: this, x: 200, y: 700});
+        this.player = new Player({ scene: this, x: 200, y: 700 });
 
         config.scene.physics.add.collider(this.groundLayer, this.player);
 
@@ -101,16 +106,16 @@ export default class LevelZero extends Phaser.Scene {
         // set background color, so the sky is not black    
         this.cameras.main.setBackgroundColor('#99daf6');
 
-        //create bonus lfe
-        this.add.image(400,1100,'life').setScale(0.5)
+        this.lifes = [new Life(this, 300, 1000), new Life(this, 100, 1100)]
 
-        // this.debugPlayerPositionText = this.add.text(30, 30, this.player.x + " , " + this.player.y, { color: "black" }).setScrollFactor(0)
+
     }
 
     update(): void {
         this.player.update();
 
         if (this.player.state !== "dying") {
+            this.lifes.forEach(life => { life.update(this.player); });
             this.beasts.forEach(beasts => {
                 beasts.forEach(beast => beast.update());
             });
@@ -118,6 +123,7 @@ export default class LevelZero extends Phaser.Scene {
             if (this.player.y > 1280)
                 this.playerDie();
         }
+
     }
 
     playerDie(): void {
@@ -146,6 +152,7 @@ export default class LevelZero extends Phaser.Scene {
     }
 
     playerCollide(): void {
+
         for (let j = 0; j < this.beasts.length; j++) {
             const beasts = this.beasts[j];
             for (let i = 0; i < beasts.length; i++) {

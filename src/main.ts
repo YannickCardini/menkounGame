@@ -1,6 +1,8 @@
 import Phaser from 'phaser'
 import LevelZero from './scenes/LevelZero';
 import Menu from './scenes/Menu';
+import RexUIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin.js';
+import GlowFilterPipelinePlugin from 'phaser3-rex-plugins/plugins/glowfilter2pipeline-plugin.js'
 
 const WIDTH = 620;
 const HEIGHT = 320;
@@ -24,6 +26,13 @@ const config: Phaser.Types.Core.GameConfig = {
 		//Max height and width
 		max:widthHeight,
 	},
+    plugins: {
+        global: [{
+            key: 'rexGlowFilterPipeline',
+            plugin: GlowFilterPipelinePlugin,
+            start: true
+        }],
+    },
 	physics: {
 		default: 'arcade',
 		arcade: {
@@ -32,6 +41,7 @@ const config: Phaser.Types.Core.GameConfig = {
 		}
 
 	},
+	
 	scene: [LevelZero,Menu]
 }
 
