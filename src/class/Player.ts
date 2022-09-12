@@ -83,10 +83,10 @@ export class Player extends Physics.Arcade.Sprite {
         let worldX = this.config.scene.cameras.main.worldView.x;
         let worldY = this.config.scene.cameras.main.worldView.y;
 
-        let jumpButton = this.config.scene.add.image(worldX + 513, worldY + 238, 'jump_button').setScrollFactor(0).setScale(0.72).setInteractive();
-        let slideButton = this.config.scene.add.image(jumpButton.x + 40, jumpButton.y + 35, 'slide_button').setScrollFactor(0).setScale(0.7).setInteractive();
-        let leftButton = this.config.scene.add.image(worldX + 50, slideButton.y, 'left_button').setScrollFactor(0).setScale(0.72).setInteractive();
-        let rightButton = this.config.scene.add.image(leftButton.x + 50, leftButton.y, 'right_button').setScrollFactor(0).setScale(0.7).setInteractive();
+        let jumpButton = this.config.scene.add.image(worldX + 513, worldY + 238, 'jump_button').setScrollFactor(0).setInteractive();
+        let slideButton = this.config.scene.add.image(jumpButton.x + 50, jumpButton.y + 45, 'slide_button').setScrollFactor(0).setInteractive();
+        let leftButton = this.config.scene.add.image(worldX + 50, slideButton.y, 'left_button').setScrollFactor(0).setInteractive();
+        let rightButton = this.config.scene.add.image(leftButton.x + 70, leftButton.y, 'right_button').setScrollFactor(0).setInteractive();
         let fullScreenButton = this.config.scene.add.image(worldX + 580, worldY + 30, 'fullScreen_button').setScrollFactor(0).setInteractive();
 
         jumpButton.on('pointerdown', () => {
@@ -98,6 +98,11 @@ export class Player extends Physics.Arcade.Sprite {
         rightButton.on('pointerdown', () => {
             this.run(false);
         });
+        slideButton.on('pointerdown', () => {
+            this.slide();
+            this.pointerUp();
+        });
+        
         fullScreenButton.on('pointerup',  () => {
             if (this.config.scene.scale.isFullscreen)
             {
@@ -112,20 +117,17 @@ export class Player extends Physics.Arcade.Sprite {
         }, this);
 
 
-        jumpButton.on('pointerup', () => {
-            this.pointerUp();
-        });
-        slideButton.on('pointerup', () => {
-            this.slide();
-            this.pointerUp();
-        });
-        leftButton.on('pointerup', () => {
-            this.pointerUp();
+        // jumpButton.on('pointerup', () => {
+        //     this.pointerUp();
+        // });
 
-        });
-        rightButton.on('pointerup', () => {
-            this.pointerUp();
-        });
+        // leftButton.on('pointerup', () => {
+        //     this.pointerUp();
+
+        // });
+        // rightButton.on('pointerup', () => {
+        //     this.pointerUp();
+        // });
 
     }
 

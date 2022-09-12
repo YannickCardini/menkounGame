@@ -23,7 +23,7 @@ const config: Phaser.Types.Core.GameConfig = {
 		// Center vertically and horizontally
 		autoCenter: Phaser.Scale.CENTER_HORIZONTALLY,
 		//Max height and width
-		max:widthHeight,
+		// max:widthHeight,
 	},
     plugins: {
         global: [{
