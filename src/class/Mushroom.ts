@@ -62,7 +62,7 @@ export class Mushroom extends Bestiaire {
     }
 
     update(...args: any[]): void {
-        if (this.state !== "dying") {
+        if (this.state !== "dying" && this.state !== "dead") {
             this.animations();
             this.beastMovements();
         }

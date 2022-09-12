@@ -1,6 +1,7 @@
-import Phaser, { NONE, Physics, Tilemaps } from 'phaser'
+import Phaser, { Tilemaps } from 'phaser'
 import { Bestiaire, BestiaireConfig } from '~/class/Bestiaire';
 import { Bird } from '~/class/Bird';
+import { Boar } from '~/class/Boar';
 import { Life } from '~/class/Life';
 import { Mushroom } from '~/class/Mushroom';
 import { Player } from '~/class/Player';
@@ -23,11 +24,6 @@ export default class LevelZero extends Phaser.Scene {
 
     constructor() {
         super('LevelZero');
-
-    }
-
-    init(){
-
     }
 
     preload() {
@@ -44,19 +40,22 @@ export default class LevelZero extends Phaser.Scene {
         this.load.atlas('cat', 'assets/cat-0.png', 'assets/cat.json');
         // mushroom animations
         this.load.atlas('mushroom', 'assets/mushroom.png', 'assets/mushroom.json');
+        // disappear animations
         this.load.atlas('disappear', 'assets/disappear.png', 'assets/disappear.json')
-
+        // boar animations
+        this.load.atlas('boar', 'assets/boar.png', 'assets/boar.json');
         // bird animations
         this.load.atlas('bird', 'assets/bird.png', 'assets/bird.json');
         // Decorations
         this.load.image('decor', 'assets/decor.png');
     }
 
-    create(data: {skipRegistry: boolean}) {
+    create(data: { skipRegistry: boolean }) {
 
         //  Create the nbr of life in the Registry if first time
-        if(data.skipRegistry === undefined){}
+        if (data.skipRegistry === undefined) {
             this.registry.set('nbrLife', 3);
+        }
         // // Create background layers
         for (let i = 11; i > (LevelZero.backgroundLayersStart - 1); i--)
             this.add.image(1018, 1040, 'background-' + i).setScrollFactor(2 / i, 1);
@@ -98,11 +97,12 @@ export default class LevelZero extends Phaser.Scene {
 
         // create the mushroom sprite    
         let mushrooms = [new Mushroom(config), new Mushroom({ scene: this, x: 3000, y: 1100, movingRangeX1: 200, movingRangeX2: 430, ground: this.groundLayer })];
-        let birds = [new Bird({ scene: this, x: 900, y: 1050, movingRangeX1: -500, movingRangeX2: 900 })]
+        let birds = [new Bird({ scene: this, x: 900, y: 1050, movingRangeX1: -500, movingRangeX2: 900 })];
+        let boars = [new Boar({ scene: this, x: 300, y: 1000, movingRangeX1: 200, movingRangeX2: 400, ground: this.groundLayer })];
 
-        this.beasts = [mushrooms, birds]
+        this.beasts = [boars,mushrooms,birds];
         // create the player sprite    
-        this.player = new Player({ scene: this, x: 200, y: 700 });
+        this.player = new Player({ scene: this, x: 100, y: 1000 });
 
         config.scene.physics.add.collider(this.groundLayer, this.player);
 
@@ -118,11 +118,12 @@ export default class LevelZero extends Phaser.Scene {
         this.lifes = [new Life(this, 300, 1000), new Life(this, 100, 1100)]
 
         const style: Phaser.Types.GameObjects.Text.TextStyle = { font: "12pt Courier", color: "#ffb000", strokeThickness: 1, stroke: "#000000" }
-        console.log(this.registry.get('nbrLife'))
         this.lifeImg = this.add.image(20, 20, 'life').setScrollFactor(0).setScale(0.3);
         this.lifeText = this.add.text(35, 12, "x" + this.registry.get('nbrLife').toString(), style).setScrollFactor(0);
-
-
+        if (data.skipRegistry !== undefined) {
+            TweenHelper.flashElement(this, this.lifeText);
+            TweenHelper.flashElement(this, this.lifeImg);
+        }
     }
 
     update(): void {
@@ -130,13 +131,13 @@ export default class LevelZero extends Phaser.Scene {
         if (this.player.state !== "dying") {
             this.lifes.forEach(life => { life.update(this.player); });
             this.beasts.forEach(beasts => {
-                beasts.forEach(beast => beast.update());
+                for (let beast of beasts)
+                    beast.update()
             });
             this.playerCollide();
             if (this.player.y > 1280)
                 this.playerDie();
         }
-
     }
 
     playerDie(): void {
@@ -147,14 +148,14 @@ export default class LevelZero extends Phaser.Scene {
             beasts.forEach(beast => beast.playerDie())
         })
         let nbrLife = this.registry.get('nbrLife');
-        this.registry.set('nbrLife', nbrLife-1)
+        this.registry.set('nbrLife', nbrLife - 1)
 
         this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, (cam, effect) => {
 
             if (nbrLife < 0)
                 this.scene.start('menu');
             else {
-                this.scene.restart({skipRegistry:true});
+                this.scene.restart({ skipRegistry: true });
             }
         })
     }
@@ -171,16 +172,24 @@ export default class LevelZero extends Phaser.Scene {
             for (let i = 0; i < beasts.length; i++) {
                 const beast = beasts[i];
                 // handling collision between enemy and hero
-                if (beast.state !== "dying")
+                if (beast.state !== "dying" && beast.state !== "dead")
                     this.physics.world.collide(this.player, beast, (hero) => {
-                        console.log('touching')
-                        if (beast instanceof Mushroom && beast.body.touching.up && hero.body.touching.down) {
-                            this.player.setVelocityY(-500);
-                            beast.jumpOnMushroom();
+                        if (beast.body.touching.up && hero.body.touching.down) {
+                            if (beast instanceof Mushroom) {
+                                this.player.setVelocityY(-500);
+                                beast.jumpOnMushroom();
+                            }
+                            else {
+                                this.player.setVelocityY(-280);
+                                beast.die('jump');
+                            }
+                        }
+                        else if(beast instanceof Boar && ((beast.body.touching.right && !beast.flipX) || (beast.body.touching.left && beast.flipX))){
+                            this.playerDie();
                         }
                         else {
                             if (this.player.state === "sliding")
-                                beast.die();
+                                beast.die('slide');
                             else
                                 this.playerDie();
                         }

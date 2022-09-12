@@ -1,7 +1,6 @@
 import Phaser from 'phaser'
 import LevelZero from './scenes/LevelZero';
 import Menu from './scenes/Menu';
-import RexUIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin.js';
 import GlowFilterPipelinePlugin from 'phaser3-rex-plugins/plugins/glowfilter2pipeline-plugin.js'
 
 const WIDTH = 620;

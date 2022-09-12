@@ -28,6 +28,9 @@ export class Bird extends Bestiaire {
 
     animations() {
         switch (this.state) {
+            case 'dying':
+                console.log("here")
+                this.anims.play("bird_dying",true);
             default:
                 this.anims.play("fly", true);
                 break;
@@ -41,14 +44,19 @@ export class Bird extends Bestiaire {
             frameRate: 7,
             repeat: -1
         });
+        scene.anims.create({
+            key: "bird_dying",
+            frames: scene.anims.generateFrameNames('bird', { prefix: 'b1_fly', start: 1, end: 3, zeroPad: 2 }),
+            frameRate: 30,
+        });
     }
 
     update(...args: any[]): void {
-        if (this.state !== "dying") {
+        if (this.state !== "dead") {
             this.animations();
             this.beastMovements(140);
             if(this.body.x < -200)
-                this.die();
+                this.die('slide');
         }
     }
 

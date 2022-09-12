@@ -142,6 +142,7 @@ export class Player extends Physics.Arcade.Sprite {
     die(): void {
         this.state = "dying";
         this.setVelocity(0, 0);
+        (this.body as Phaser.Physics.Arcade.Body).allowGravity = false;
         this.on("animationcomplete", () => this.stopAnimation = true)
 
     }
@@ -164,8 +165,10 @@ export class Player extends Physics.Arcade.Sprite {
     }
 
     private stopSliding(): void {
-        this.state = "idling";
-        this.setAccelerationX(0);
+        if (this.state !== "dying") {
+            this.state = "idling";
+            this.setAccelerationX(0);
+        }
     }
 
     update(...args: any[]): void {

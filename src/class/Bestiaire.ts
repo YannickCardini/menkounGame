@@ -1,6 +1,6 @@
 import { Physics, Scene, Tilemaps } from "phaser";
 
-export interface hitbox{
+export interface hitbox {
     width: number,
     height: number,
     offsetX: number,
@@ -26,27 +26,33 @@ export class Bestiaire extends Physics.Arcade.Sprite {
 
     constructor(config: BestiaireConfig, atlas: string) {
 
-        super(config.scene,config.x,config.y, atlas);
+        super(config.scene, config.x, config.y, atlas);
 
         config.scene.add.existing(this);
         config.scene.physics.add.existing(this);
 
         this.config = config;
 
-        this.state = config.state ? config.state :"moving_right";
+        this.state = config.state ? config.state : "moving_right";
 
-        if(config.ground)
+        if (config.ground)
             this.collider = config.scene.physics.add.collider(config.ground, this);
+
+        config.scene.anims.create({
+            key: "boom",
+            frames: config.scene.anims.generateFrameNames('disappear', { prefix: 'c1_boom', start: 1, end: 3, zeroPad: 2 }),
+            frameRate: 7,
+        });
 
         config.scene.time.addEvent({ delay: 500, callback: this.delayDone, callbackScope: this, loop: false });
 
     }
 
     beastMovements(speed = 50): void {
-        let x1= this.config.movingRangeX1;
-        let x2= this.config.movingRangeX2;
+        let x1 = this.config.movingRangeX1;
+        let x2 = this.config.movingRangeX2;
         let moveSpeed = speed;
-        
+
         if (this.x > x2 && this.state === "moving_right")
             this.state = "moving_left";
         else if (this.x < x1 && this.state === "moving_left")
@@ -63,28 +69,43 @@ export class Bestiaire extends Physics.Arcade.Sprite {
     }
 
     delayDone(): void {
-        if(this.config.hitbox){
+        if (this.config.hitbox) {
             this.body.setSize(this.width - this.config.hitbox.width, this.height - this.config.hitbox.height, true);
-            this.body.setOffset(this.config.hitbox.offsetX,this.config.hitbox.offsetY);
+            this.body.setOffset(this.config.hitbox.offsetX, this.config.hitbox.offsetY);
         }
         else
-            this.body.setSize(this.width,this.height)
+            this.body.setSize(this.width, this.height)
 
     }
 
-    die(): void{
+    die(anim: string): void {
         this.state = "dying";
-        (this.body as Phaser.Physics.Arcade.Body).allowGravity = true;
-        this.setVelocityY(-250);
         this.setVelocityX(0);
-        if(this.collider)
-            this.collider.active = false;
-        this.config.scene.time.addEvent({ delay: 1500, callback: this.destroy, callbackScope: this, loop: false });
+
+        if (anim === 'slide') {
+            (this.body as Phaser.Physics.Arcade.Body).allowGravity = true;
+            this.setVelocityY(-250);
+            if (this.collider)
+                this.collider.active = false;
+            this.config.scene.time.addEvent({ delay: 1500, callback: () => { this.state = "dead"; this.destroy; }, callbackScope: this, loop: false });
+
+        }
+        else if (anim === 'jump') {
+            this.state = "dead";
+            this.setVisible(false);
+            let sprite = this.config.scene.add.sprite(this.x, this.y, "disappear");
+
+            sprite.anims.play("boom", true);
+            sprite.on("animationcomplete", () => {
+                sprite.destroy();
+                this.destroy();
+            })
+        }
     }
 
-    playerDie(): void{
-        if(this.active){
-            this.setVelocity(0,0);
+    playerDie(): void {
+        if (this.active) {
+            this.setVelocity(0, 0);
             this.anims.stop();
         }
     }
