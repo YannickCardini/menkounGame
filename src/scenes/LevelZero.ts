@@ -48,6 +48,14 @@ export default class LevelZero extends Phaser.Scene {
         this.load.atlas('bird', 'assets/bird.png', 'assets/bird.json');
         // Decorations
         this.load.image('decor', 'assets/decor.png');
+        // load button
+        this.load.image('slide_button','assets/slide_button.png');
+        this.load.image('jump_button', 'assets/jump_button.png');
+        this.load.image('left_button','assets/left_button.png');
+        this.load.image('right_button', 'assets/right_button.png')
+        this.load.image('fullScreen_button', 'assets/fullScreen_button.png')
+
+
     }
 
     create(data: { skipRegistry: boolean }) {
@@ -124,6 +132,7 @@ export default class LevelZero extends Phaser.Scene {
             TweenHelper.flashElement(this, this.lifeText);
             TweenHelper.flashElement(this, this.lifeImg);
         }
+
     }
 
     update(): void {

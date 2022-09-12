@@ -59,31 +59,74 @@ export class Player extends Physics.Arcade.Sprite {
         };
     }
 
-    controls(): void {
+    controlsDesktop(): void {
         if (this.state === "sliding") {
             if (this.flipX)
                 this.setVelocityX(-Player.VELOCITY)
             else
                 this.setVelocityX(Player.VELOCITY)
         }
-        else if ((this.cursors.space.isDown || this.cursors.up.isDown) && (this.body as Phaser.Physics.Arcade.Body).onFloor())
-            this.setVelocityY(-400);
-        else if (Phaser.Input.Keyboard.JustDown(this.downKey) && (this.body as Phaser.Physics.Arcade.Body).onFloor()) {
-            this.state = "sliding";
-            this.config.scene.time.addEvent({ delay: 400, callback: this.stopSliding, callbackScope: this, loop: false })
-        }
+        else if ((this.cursors.space.isDown || this.cursors.up.isDown))
+            this.jump();
+        else if (Phaser.Input.Keyboard.JustDown(this.downKey))
+            this.slide();
         else if (this.cursors.left.isDown) // if the left arrow key is down
-        {
-            this.setVelocityX(-Player.VELOCITY); // move left
-            this.flipX = true; // flip the sprite to the left
-        }
+            this.run();
         else if (this.cursors.right.isDown) // if the right arrow key is down
-        {
-            this.setVelocityX(Player.VELOCITY); // move right
-            this.flipX = false; // use the original sprite looking to    the right
-        }
+            this.run(false);
         else
             this.setVelocityX(0);
+    }
+
+    controlsMobile(): void {
+
+        let worldX = this.config.scene.cameras.main.worldView.x;
+        let worldY = this.config.scene.cameras.main.worldView.y;
+
+        let jumpButton = this.config.scene.add.image(worldX + 513, worldY + 238, 'jump_button').setScrollFactor(0).setScale(0.72).setInteractive();
+        let slideButton = this.config.scene.add.image(jumpButton.x + 40, jumpButton.y + 35, 'slide_button').setScrollFactor(0).setScale(0.7).setInteractive();
+        let leftButton = this.config.scene.add.image(worldX + 50, slideButton.y, 'left_button').setScrollFactor(0).setScale(0.72).setInteractive();
+        let rightButton = this.config.scene.add.image(leftButton.x + 50, leftButton.y, 'right_button').setScrollFactor(0).setScale(0.7).setInteractive();
+        let fullScreenButton = this.config.scene.add.image(worldX + 580, worldY + 30, 'fullScreen_button').setScrollFactor(0).setInteractive();
+
+        jumpButton.on('pointerdown', () => {
+            this.jump();
+        });
+        leftButton.on('pointerdown', () => {
+            this.run();
+        });
+        rightButton.on('pointerdown', () => {
+            this.run(false);
+        });
+        fullScreenButton.on('pointerup',  () => {
+            if (this.config.scene.scale.isFullscreen)
+            {
+                fullScreenButton.setFrame(0);
+                this.config.scene.scale.stopFullscreen();
+            }
+            else
+            {
+                fullScreenButton.setFrame(1);
+                this.config.scene.scale.startFullscreen();
+            }
+        }, this);
+
+
+        jumpButton.on('pointerup', () => {
+            this.pointerUp();
+        });
+        slideButton.on('pointerup', () => {
+            this.slide();
+            this.pointerUp();
+        });
+        leftButton.on('pointerup', () => {
+            this.pointerUp();
+
+        });
+        rightButton.on('pointerup', () => {
+            this.pointerUp();
+        });
+
     }
 
     createAnims(scene: Scene) {
@@ -164,10 +207,39 @@ export class Player extends Physics.Arcade.Sprite {
         }
     }
 
+    jump(): void {
+        if ((this.body as Phaser.Physics.Arcade.Body).onFloor())
+            this.setVelocityY(-500);
+    }
+
+    pointerUp(): void {
+        if (this.state === "sliding") {
+            if (this.flipX)
+                this.setVelocityX(-Player.VELOCITY)
+            else
+                this.setVelocityX(Player.VELOCITY)
+        } else {
+            this.setVelocityX(0);
+        }
+    }
+
+    run(left = true): void {
+        let isNegatif = left ? -1 : 1;
+        this.setVelocityX(isNegatif * Player.VELOCITY); // move left
+        this.flipX = left; // flip the sprite to the left
+    }
+
+    slide(): void {
+        if ((this.body as Phaser.Physics.Arcade.Body).onFloor()) {
+            this.state = "sliding";
+            this.config.scene.time.addEvent({ delay: 400, callback: this.stopSliding, callbackScope: this, loop: false })
+        }
+    }
+
     private stopSliding(): void {
         if (this.state !== "dying") {
             this.state = "idling";
-            this.setAccelerationX(0);
+            this.setVelocityX(0);
         }
     }
 
@@ -177,8 +249,12 @@ export class Player extends Physics.Arcade.Sprite {
             this.animation();
         if (this.state !== "dying") {
             this.state = this.getCurrentState();
-            this.controls();
-
+            if (this.config.scene.sys.game.device.os.desktop) {
+                this.controlsDesktop();
+            }
+            else {
+                this.controlsMobile();
+            }
         }
     }
 }
