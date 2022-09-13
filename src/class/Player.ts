@@ -102,7 +102,6 @@ export class Player extends Physics.Arcade.Sprite {
             this.slide();
             this.pointerUp();
         });
-        
         fullScreenButton.on('pointerup',  () => {
             if (this.config.scene.scale.isFullscreen)
             {
@@ -211,7 +210,7 @@ export class Player extends Physics.Arcade.Sprite {
 
     jump(): void {
         if ((this.body as Phaser.Physics.Arcade.Body).onFloor())
-            this.setVelocityY(-500);
+            this.setVelocityY(-400);
     }
 
     pointerUp(): void {
@@ -251,12 +250,11 @@ export class Player extends Physics.Arcade.Sprite {
             this.animation();
         if (this.state !== "dying") {
             this.state = this.getCurrentState();
-            if (this.config.scene.sys.game.device.os.desktop) {
+            if (this.config.scene.sys.game.device.os.desktop) 
                 this.controlsDesktop();
-            }
-            else {
+            else 
                 this.controlsMobile();
-            }
+            
         }
     }
 }

@@ -2,37 +2,38 @@ import Phaser, { Tilemaps } from 'phaser'
 import { Bestiaire, BestiaireConfig } from '~/class/Bestiaire';
 import { Bird } from '~/class/Bird';
 import { Boar } from '~/class/Boar';
+import { Dialog } from '~/class/Dialog';
 import { Life } from '~/class/Life';
 import { Mushroom } from '~/class/Mushroom';
 import { Player } from '~/class/Player';
 import { TweenHelper } from '~/class/TweenHelper';
 
-export default class LevelZero extends Phaser.Scene {
+export default class LevelOne extends Phaser.Scene {
 
     map: Tilemaps.Tilemap;
     groundLayer: Tilemaps.TilemapLayer;
     player: Player;
     beasts: Array<Array<Bestiaire>>;
-    // static readonly SCALE: number = 0.5;
     cursors: Phaser.Types.Input.Keyboard.CursorKeys;
-    static readonly backgroundLayersStart: number = 4;
+    static readonly backgroundLayersStart: number = 2;
     debugPlayerPositionText: Phaser.GameObjects.Text;
     lifes: Array<Life>;
     lifeImg: Phaser.GameObjects.Image;
     lifeText: Phaser.GameObjects.Text;
+    backgrounds: Array<Phaser.GameObjects.Image>;
 
 
     constructor() {
-        super('LevelZero');
+        super('LevelOne');
     }
 
     preload() {
         // map made with Tiled in JSON format
-        this.load.tilemapTiledJSON('map', '/assets/tiled/level0.json')
+        this.load.tilemapTiledJSON('map', '/assets/tiled/level1.json')
         // tiles in spritesheet 
         this.load.image('TX Tileset Ground', 'assets/tiled/TX Tileset Ground.png');
         //Background Layers
-        for (let i = LevelZero.backgroundLayersStart; i < 12; i++)
+        for (let i = LevelOne.backgroundLayersStart; i < 12; i++)
             this.load.image('background-' + i, "assets/background/background-" + i + ".png");
         // life info
         this.load.image("life", "assets/life.png")
@@ -46,8 +47,6 @@ export default class LevelZero extends Phaser.Scene {
         this.load.atlas('boar', 'assets/boar.png', 'assets/boar.json');
         // bird animations
         this.load.atlas('bird', 'assets/bird.png', 'assets/bird.json');
-        // Decorations
-        this.load.image('decor', 'assets/decor.png');
 
         if (!this.sys.game.device.os.desktop) {
             // load button mobile
@@ -61,16 +60,23 @@ export default class LevelZero extends Phaser.Scene {
 
     create(data: { skipRegistry: boolean }) {
 
+        //resize game if screen orientation or other
+        window.addEventListener('resize', this.resize);
+        this.resize();
+
+
         //  Create the nbr of life in the Registry if first time
         if (data.skipRegistry === undefined) {
             this.registry.set('nbrLife', 3);
         }
         // // Create background layers
-        for (let i = 11; i > (LevelZero.backgroundLayersStart - 1); i--)
-            this.add.image(1018, 1040, 'background-' + i).setScrollFactor(2 / i, 1);
+        for (let i = 11; i > (LevelOne.backgroundLayersStart - 1); i--) {
+            this.add.image(0, 0, 'background-' + i).setScale(0.5).setOrigin(0).setScrollFactor(2 / i, 1);
+            this.add.image(1024, 0, 'background-' + i).setScale(0.5).setOrigin(0).setScrollFactor(2 / i, 1);
+            // this.add.image(2048, 0, 'background-' + i).setScale(0.5).setOrigin(0).setScrollFactor(2 / i, 1);
 
-        // Create decorations
-        this.add.image(1030, 736, 'decor');
+
+        }
 
         // Add life counter at the top left corner
         this.registry.events.on('changedata', this.updateLifeStatus, this);
@@ -86,7 +92,7 @@ export default class LevelZero extends Phaser.Scene {
         // tiles for the ground layer
         const groundTiles = this.map.addTilesetImage('TX Tileset Ground');
         // create the ground layer
-        this.groundLayer = this.map.createLayer('platform', groundTiles);
+        this.groundLayer = this.map.createLayer('Tile Layer 1', groundTiles);
 
         // // the player will collide with this layer
         this.groundLayer.setCollisionByExclusion([-1]);
@@ -96,27 +102,36 @@ export default class LevelZero extends Phaser.Scene {
 
         let config: BestiaireConfig = {
             scene: this,
-            x: 730,
-            y: 1055,
+            x: 523,
+            y: 500,
             state: "moving_right",
-            movingRangeX1: 600,
-            movingRangeX2: 900,
+            movingRangeX1: 220,
+            movingRangeX2: 540,
             ground: this.groundLayer
         }
 
         // create the mushroom sprite    
-        let mushrooms = [new Mushroom(config), new Mushroom({ scene: this, x: 3000, y: 1100, movingRangeX1: 200, movingRangeX2: 430, ground: this.groundLayer })];
-        let birds = [new Bird({ scene: this, x: 900, y: 1050, movingRangeX1: -500, movingRangeX2: 900 })];
-        let boars = [new Boar({ scene: this, x: 300, y: 1000, movingRangeX1: 200, movingRangeX2: 400, ground: this.groundLayer })];
+        let mushrooms = [new Mushroom(config), new Mushroom({ scene: this, x: 350, y: 290, movingRangeX1: 350, movingRangeX2: 480, ground: this.groundLayer })];
+        let birds =
+            [
+                new Bird({ scene: this, x: 1900, y: 500, movingRangeX1: -100, movingRangeX2: 2900 }),
+                new Bird({ scene: this, x: 1900, y: 400, movingRangeX1: -100, movingRangeX2: 2000 }),
+                new Bird({ scene: this, x: 1400, y: 50, movingRangeX1: -100, movingRangeX2: 1900 }),
+
+            ];
+        let boars = [new Boar({ scene: this, x: 1300, y: 500, movingRangeX1: 800, movingRangeX2: 1350, ground: this.groundLayer })];
 
         this.beasts = [boars, mushrooms, birds];
         // create the player sprite    
-        this.player = new Player({ scene: this, x: 100, y: 1000 });
+        this.player = new Player({ scene: this, x: 100, y: 300 });
 
         config.scene.physics.add.collider(this.groundLayer, this.player);
 
         // set bounds so the camera won't go outside the game world
-        this.cameras.main.setBounds(32, 0, this.map.widthInPixels - 64, this.map.heightInPixels - 96);
+        let heightInPixels = this.map.heightInPixels - 64;
+        // if (!this.sys.game.device.os.desktop)
+            heightInPixels = this.map.heightInPixels;
+        this.cameras.main.setBounds(32, 0, this.map.widthInPixels - 32, heightInPixels);
         // make the camera follow the player
         this.cameras.main.startFollow(this.player);
         this.cameras.main.fadeIn(2000);
@@ -124,7 +139,7 @@ export default class LevelZero extends Phaser.Scene {
         // set background color, so the sky is not black    
         this.cameras.main.setBackgroundColor('#99daf6');
 
-        this.lifes = [new Life(this, 300, 1000), new Life(this, 100, 1100)]
+        this.lifes = [new Life(this, 960, 45), new Life(this, 100, 1100)];
 
         const style: Phaser.Types.GameObjects.Text.TextStyle = { font: "12pt Courier", color: "#ffb000", strokeThickness: 1, stroke: "#000000" }
         this.lifeImg = this.add.image(20, 20, 'life').setScrollFactor(0).setScale(0.3);
@@ -134,10 +149,16 @@ export default class LevelZero extends Phaser.Scene {
             TweenHelper.flashElement(this, this.lifeImg);
         }
 
+        let dia = new Dialog(this,{windowHeight: 70, padding: 12, dialogSpeed: 4});
+        dia.setText("'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore etfdsssqsdf fqsd f fsg s arez  cxtft ytry pokpoe paojzprez  ezapoofoi  dolore magna aliqua.'",true)
+
+
     }
 
     update(): void {
         this.player.update();
+        console.log(this.player.x, this.player.y)
+
         if (this.player.state !== "dying") {
             this.lifes.forEach(life => { life.update(this.player); });
             this.beasts.forEach(beasts => {
@@ -170,6 +191,18 @@ export default class LevelZero extends Phaser.Scene {
         })
     }
 
+    resize(): void {
+        var canvas = this.game.canvas, width = window.innerWidth, height = window.innerHeight;
+        var wratio = width / height, ratio = canvas.width / canvas.height;
+        if (wratio < ratio) {
+            canvas.style.width = width + "px";
+            canvas.style.height = (width / ratio) + "px";
+        } else {
+            canvas.style.width = (height * ratio) + "px";
+            canvas.style.height = height + "px";
+        }
+    }
+
     updateLifeStatus(parent, key, data) {
         this.lifeText.setText("x" + data.toString());
         TweenHelper.flashElement(this, this.lifeText);
@@ -186,7 +219,7 @@ export default class LevelZero extends Phaser.Scene {
                     this.physics.world.collide(this.player, beast, (hero) => {
                         if (beast.body.touching.up && hero.body.touching.down) {
                             if (beast instanceof Mushroom) {
-                                this.player.setVelocityY(-550);
+                                this.player.setVelocityY(-600);
                                 beast.jumpOnMushroom();
                             }
                             else {
