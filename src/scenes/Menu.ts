@@ -3,30 +3,30 @@ export default class Menu extends Phaser.Scene {
     private buttons: Phaser.GameObjects.Image[] = []
     private selectedButtonIndex = 0
     private buttonSelector!: Phaser.GameObjects.Image
-    private fontSize: number
+    private fontSize = 30;
     player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
 
     constructor() {
         super('menu')
-        this.fontSize = 30
-    }
-
-    init() {
-        this.cursors = this.input.keyboard.createCursorKeys()
     }
 
     preload() {
-        this.load.image('metal-panel', 'assets/menu/metalPanel.png')
-        this.load.image('cursor-hand', 'assets/menu/cursor_hand.png')
+        this.load.image('metal-panel', 'assets/menu/metalPanel.png');
+        this.load.image('cursor-hand', 'assets/menu/cursor_hand.png');
         this.load.atlas('cat', 'assets/cat-0.png', 'assets/cat.json');
         this.load.image('clouds', 'assets/menu/clouds.png');
-        this.load.image('poteau', 'assets/menu/poteau.png')
-        this.load.image('ground','assets/menu/menu_ground.png')
-        this.load.image('logo','assets/menu/menkounLogo.png')
+        this.load.image('poteau', 'assets/menu/poteau.png');
+        this.load.image('ground', 'assets/menu/menu_ground.png');
+        this.load.image('logo', 'assets/menu/menkounLogo.png');
         this.load.bitmapFont('desyrel', 'assets/menu/desyrel.png', 'assets/menu/desyrel.xml');
     }
 
     create() {
+
+        this.buttons = [];
+        this.cursors = this.input.keyboard.createCursorKeys();
+        this.selectedButtonIndex = 0
+        this.fontSize = 30;
 
         let { width, height } = this.sys.game.canvas;
 
@@ -40,7 +40,7 @@ export default class Menu extends Phaser.Scene {
             repeat: -1
         });
 
-        var ground = this.add.image(width/2,height/2,'ground')
+        var ground = this.add.image(width / 2, height / 2, 'ground');
         ground.setPipeline('Light2D');
 
         var pic = this.add.image(100, 240, 'poteau');
@@ -50,7 +50,7 @@ export default class Menu extends Phaser.Scene {
         var light = this.lights.addLight(115, 226, 200).setIntensity(2);
 
         this.tweens.add({
-            targets: [ light ],
+            targets: [light],
             y: 200,
             ease: 'Sine.easeInOut',
             yoyo: true,
@@ -61,9 +61,9 @@ export default class Menu extends Phaser.Scene {
         // We must enable the light system. By default is disabled
         this.lights.enable();
 
-        this.player = this.physics.add.sprite(60, 260, 'cat').setScale(0.5)
-        this.player.body.setAllowGravity(false)
-        this.player.setPipeline('Light2D')
+        this.player = this.physics.add.sprite(60, 260, 'cat').setScale(0.5);
+        this.player.body.setAllowGravity(false);
+        this.player.setPipeline('Light2D');
 
         this.anims.create({
             key: "walk",
@@ -72,38 +72,36 @@ export default class Menu extends Phaser.Scene {
             repeat: -1
         });
 
-        this.add.image(170,60,'logo').setScale(0.2)
-        const tintedText = this.add.bitmapText(30, 90, 'desyrel', '', 40).setTint(0xffa500,0xffa500,0xffa500,0xffa500);
-
-        // tintedText;
+        this.add.image(170, 60, 'logo').setScale(0.2);
+        const tintedText = this.add.bitmapText(30, 90, 'desyrel', '', 40).setTint(0xffa500, 0xffa500, 0xffa500, 0xffa500);
 
         // Play button
         const playButton = this.add.image(width * 0.8, height * 0.3, 'metal-panel')
             .setDisplaySize(150, 50).setInteractive({ cursor: 'pointer' });
 
         this.add.bitmapText(playButton.x, playButton.y, 'desyrel', 'Jouer', this.fontSize)
-            .setOrigin(0.5, 0.5)
+            .setOrigin(0.5, 0.5);
 
         // Settings button
         const donnerButton = this.add.image(playButton.x, playButton.y + playButton.displayHeight + 10, 'metal-panel')
-            .setDisplaySize(150, 50).setInteractive({ cursor: 'pointer' })
+            .setDisplaySize(150, 50).setInteractive({ cursor: 'pointer' });
 
         this.add.bitmapText(donnerButton.x, donnerButton.y, 'desyrel', 'Donner', this.fontSize)
-            .setOrigin(0.5, 0.5)
+            .setOrigin(0.5, 0.5);
 
         // Credits button
         const adoptButton = this.add.image(donnerButton.x, donnerButton.y + donnerButton.displayHeight + 10, 'metal-panel')
             .setDisplaySize(150, 50).setInteractive({ cursor: 'pointer' });
 
         this.add.bitmapText(adoptButton.x, adoptButton.y, 'desyrel', 'Adopter', this.fontSize)
-            .setOrigin(0.5, 0.5)
+            .setOrigin(0.5, 0.5);
 
-        this.buttons.push(playButton)
-        this.buttons.push(donnerButton)
-        this.buttons.push(adoptButton)
+        this.buttons.push(playButton);
+        this.buttons.push(donnerButton);
+        this.buttons.push(adoptButton);
 
-        this.buttonSelector = this.add.image(0, 0, 'cursor-hand')
-        this.selectButton(0)
+        this.buttonSelector = this.add.image(0, 0, 'cursor-hand');
+        this.selectButton(0);
 
         playButton.on('selected', () => {
             tintedText.setText('THE GAME')
@@ -133,8 +131,7 @@ export default class Menu extends Phaser.Scene {
         })
 
         playButton.on('confirm', () => {
-            console.log("play button pressed")
-            this.scene.start('LevelZero')
+            this.scene.start('LevelOne', { skipRegistry: undefined });
         })
 
         donnerButton.on('confirm', () => {
@@ -159,28 +156,30 @@ export default class Menu extends Phaser.Scene {
             playButton.off('confirm')
             donnerButton.off('confirm')
             adoptButton.off('confirm')
-        })
+            this.input.off('pointerup')
+        });
     }
 
     selectButton(index: number) {
-        const currentButton = this.buttons[this.selectedButtonIndex]
+        console.log("index: ", index)
+        const currentButton = this.buttons[this.selectedButtonIndex];
 
         // set the current selected button to a white tint
-        currentButton.setTint(0xffffff)
+        currentButton.setTint(0xffffff);
 
-        const button = this.buttons[index]
-
-        button.emit('selected')
+        const button = this.buttons[index];
 
         // set the newly selected button to a green tint
-        button.setTint(0x66ff7f)
+        button.setTint(0x66ff7f);
+
+        button.emit('selected');
 
         // move the hand cursor to the right edge
-        this.buttonSelector.x = button.x + button.displayWidth * 0.5
-        this.buttonSelector.y = button.y + 10
+        this.buttonSelector.x = button.x + button.displayWidth * 0.5;
+        this.buttonSelector.y = button.y + 10;
 
         // store the new selected index
-        this.selectedButtonIndex = index
+        this.selectedButtonIndex = index;
     }
 
     selectNextButton(change = 1) {
@@ -200,7 +199,6 @@ export default class Menu extends Phaser.Scene {
     confirmSelection() {
         // get the currently selected button
         const button = this.buttons[this.selectedButtonIndex]
-
         // emit the 'selected' event
         button.emit('confirm')
     }
@@ -217,7 +215,7 @@ export default class Menu extends Phaser.Scene {
         else if (downJustPressed) {
             this.selectNextButton(1)
         }
-        else if (spaceJustPressed ) {
+        else if (spaceJustPressed) {
             this.confirmSelection()
         }
     }

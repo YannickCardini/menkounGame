@@ -5,6 +5,7 @@ import GlowFilterPipelinePlugin from 'phaser3-rex-plugins/plugins/glowfilter2pip
 import LevelOne from './scenes/LevelOne';
 import Pause from './scenes/PauseScene';
 import PauseScene from './scenes/PauseScene';
+import DialogScene from './scenes/DialogScene';
 
 const WIDTH = 620;
 const HEIGHT = 320;
@@ -44,7 +45,7 @@ const config: Phaser.Types.Core.GameConfig = {
 
 	},
 	
-	scene: [LevelOne,Menu,LevelZero,PauseScene]
+	scene: [LevelOne,Menu,LevelZero,PauseScene,DialogScene]
 }
 
 export default new Phaser.Game(config)

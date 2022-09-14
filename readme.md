@@ -134,3 +134,9 @@ Change 8000 to whatever you want.
 ## License
 
 [MIT License](https://github.com/ourcade/phaser3-typescript-parcel-template/blob/master/LICENSE)
+
+## Send to staging
+
+```
+npm run build && sudo scp /home/loubard/Documents/menkoun\ game/menkounGame/dist/* ubuntu@51.79.255.217:/var/www/mainecoon.click/html
+```

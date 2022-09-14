@@ -126,8 +126,8 @@ export class Dialog {
         this.graphics = this.scene.add.graphics();
         this._createOuterWindow(dimensions.x, dimensions.y, dimensions.rectWidth, dimensions.rectHeight);
         this._createInnerWindow(dimensions.x, dimensions.y, dimensions.rectWidth, dimensions.rectHeight);
-        this._createCloseModalButton();
-        this._createCloseModalButtonBorder();
+        // this._createCloseModalButton();
+        // this._createCloseModalButtonBorder();
     }
 
     // Creates the inner dialog window (where the text is displayed)

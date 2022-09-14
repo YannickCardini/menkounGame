@@ -69,7 +69,8 @@ export default class LevelOne extends Phaser.Scene {
 
         //  Create the nbr of life in the Registry if first time
         if (data.skipRegistry === undefined) {
-            this.registry.set('nbrLife', 3);
+            this.registry.set('nbrLife', 0);
+            this.time.addEvent({ delay: 500, callback: this.startDialogIntro, callbackScope: this, loop: false });
         }
         // Add life counter at the top left corner
         this.registry.events.on('changedata', this.registryEvents, this);
@@ -149,32 +150,28 @@ export default class LevelOne extends Phaser.Scene {
             TweenHelper.flashElement(this, this.lifeImg);
         }
 
-         let pauseButton = this.add.image(this.game.canvas.width - 30, 25, 'pause').setScrollFactor(0).setScale(0.15);
+        let pauseButton = this.add.image(this.game.canvas.width - 30, 25, 'pause').setScrollFactor(0).setScale(0.15);
         pauseButton.setInteractive().on('pointerup', () => {
             this.scene.pause();
             this.scene.launch('PauseScene');
-        })
-
-        // this.dialog = new Dialog(this, { windowHeight: 70, padding: 12, dialogSpeed: 4 });
-        // this.dialog.setText("'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore pokpoe paojzprez  ezapoofoi  dolore magna aliqua.'", true)
-
+        });
 
     }
 
     update(): void {
-            console.log(this.player.x, this.player.y)
-            this.player.update();
+        console.log(this.player.x, this.player.y)
+        this.player.update();
 
-            if (this.player.state !== "dying") {
-                this.lifes.forEach(life => { life.update(this.player); });
-                this.beasts.forEach(beasts => {
-                    for (let beast of beasts)
-                        beast.update()
-                });
-                this.playerCollide();
-                if (this.player.y > 1280)
-                    this.playerDie();
-            }
+        if (this.player.state !== "dying") {
+            this.lifes.forEach(life => { life.update(this.player); });
+            this.beasts.forEach(beasts => {
+                for (let beast of beasts)
+                    beast.update()
+            });
+            this.playerCollide();
+            if (this.player.y > 1280)
+                this.playerDie();
+        }
 
     }
 
@@ -217,8 +214,8 @@ export default class LevelOne extends Phaser.Scene {
         this.beasts.forEach(beasts => {
             beasts.forEach(beast => beast.playerDie())
         })
-        let nbrLife = this.registry.get('nbrLife');
-        this.registry.set('nbrLife', nbrLife - 1)
+        let nbrLife = this.registry.get('nbrLife') - 1;
+        this.registry.set('nbrLife', nbrLife)
 
         this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, (cam, effect) => {
 
@@ -248,6 +245,11 @@ export default class LevelOne extends Phaser.Scene {
             canvas.style.width = (height * ratio) + "px";
             canvas.style.height = height + "px";
         }
+    }
+
+    startDialogIntro(): void{
+        this.scene.pause();
+        this.scene.launch("DialogScene");
     }
 
 }
