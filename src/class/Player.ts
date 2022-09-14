@@ -83,11 +83,11 @@ export class Player extends Physics.Arcade.Sprite {
         let worldX = this.config.scene.cameras.main.worldView.x;
         let worldY = this.config.scene.cameras.main.worldView.y;
 
-        let jumpButton = this.config.scene.add.image(worldX + 513, worldY + 238, 'jump_button').setScrollFactor(0).setInteractive();
-        let slideButton = this.config.scene.add.image(jumpButton.x + 50, jumpButton.y + 45, 'slide_button').setScrollFactor(0).setInteractive();
-        let leftButton = this.config.scene.add.image(worldX + 50, slideButton.y, 'left_button').setScrollFactor(0).setInteractive();
-        let rightButton = this.config.scene.add.image(leftButton.x + 70, leftButton.y, 'right_button').setScrollFactor(0).setInteractive();
-        let fullScreenButton = this.config.scene.add.image(worldX + 580, worldY + 30, 'fullScreen_button').setScrollFactor(0).setInteractive();
+        let jumpButton = this.config.scene.add.image(worldX + 513, worldY + 238, 'jump_button').setScrollFactor(0).setInteractive().setScale(0.25);
+        let slideButton = this.config.scene.add.image(jumpButton.x + 50, jumpButton.y + 45, 'slide_button').setScrollFactor(0).setInteractive().setScale(0.25);
+        let leftButton = this.config.scene.add.image(worldX + 50, slideButton.y, 'left_button').setScrollFactor(0).setInteractive().setScale(0.25);
+        let rightButton = this.config.scene.add.image(leftButton.x + 70, leftButton.y, 'right_button').setScrollFactor(0).setInteractive().setScale(0.25);
+        // let fullScreenButton = this.config.scene.add.image(worldX + 580, worldY + 30, 'fullScreen_button').setScrollFactor(0).setInteractive();
 
         jumpButton.on('pointerdown', () => {
             this.jump();
@@ -102,18 +102,18 @@ export class Player extends Physics.Arcade.Sprite {
             this.slide();
             this.pointerUp();
         });
-        fullScreenButton.on('pointerup',  () => {
-            if (this.config.scene.scale.isFullscreen)
-            {
-                fullScreenButton.setFrame(0);
-                this.config.scene.scale.stopFullscreen();
-            }
-            else
-            {
-                fullScreenButton.setFrame(1);
-                this.config.scene.scale.startFullscreen();
-            }
-        }, this);
+        // fullScreenButton.on('pointerup',  () => {
+        //     if (this.config.scene.scale.isFullscreen)
+        //     {
+        //         fullScreenButton.setFrame(0);
+        //         this.config.scene.scale.stopFullscreen();
+        //     }
+        //     else
+        //     {
+        //         fullScreenButton.setFrame(1);
+        //         this.config.scene.scale.startFullscreen();
+        //     }
+        // }, this);
 
 
         // jumpButton.on('pointerup', () => {

@@ -21,7 +21,8 @@ export default class LevelOne extends Phaser.Scene {
     lifeImg: Phaser.GameObjects.Image;
     lifeText: Phaser.GameObjects.Text;
     backgrounds: Array<Phaser.GameObjects.Image>;
-
+    pauseButton: Phaser.GameObjects.Image;
+    dialog: Dialog;
 
     constructor() {
         super('LevelOne');
@@ -47,6 +48,8 @@ export default class LevelOne extends Phaser.Scene {
         this.load.atlas('boar', 'assets/boar.png', 'assets/boar.json');
         // bird animations
         this.load.atlas('bird', 'assets/bird.png', 'assets/bird.json');
+        // pause game
+        this.load.image("pause", "assets/pause_button.png")
 
         if (!this.sys.game.device.os.desktop) {
             // load button mobile
@@ -54,7 +57,6 @@ export default class LevelOne extends Phaser.Scene {
             this.load.image('jump_button', 'assets/jump_button.png');
             this.load.image('left_button', 'assets/left_button.png');
             this.load.image('right_button', 'assets/right_button.png')
-            this.load.image('fullScreen_button', 'assets/fullScreen_button.png')
         }
     }
 
@@ -69,17 +71,15 @@ export default class LevelOne extends Phaser.Scene {
         if (data.skipRegistry === undefined) {
             this.registry.set('nbrLife', 3);
         }
+        // Add life counter at the top left corner
+        this.registry.events.on('changedata', this.registryEvents, this);
+
         // // Create background layers
         for (let i = 11; i > (LevelOne.backgroundLayersStart - 1); i--) {
             this.add.image(0, 0, 'background-' + i).setScale(0.5).setOrigin(0).setScrollFactor(2 / i, 1);
             this.add.image(1024, 0, 'background-' + i).setScale(0.5).setOrigin(0).setScrollFactor(2 / i, 1);
             // this.add.image(2048, 0, 'background-' + i).setScale(0.5).setOrigin(0).setScrollFactor(2 / i, 1);
-
-
         }
-
-        // Add life counter at the top left corner
-        this.registry.events.on('changedata', this.updateLifeStatus, this);
 
         const tilemapConfig: Phaser.Types.Tilemaps.TilemapConfig = {
             key: "map",
@@ -123,14 +123,14 @@ export default class LevelOne extends Phaser.Scene {
 
         this.beasts = [boars, mushrooms, birds];
         // create the player sprite    
-        this.player = new Player({ scene: this, x: 100, y: 300 });
+        this.player = new Player({ scene: this, x: 100, y: 400 });
 
         config.scene.physics.add.collider(this.groundLayer, this.player);
 
         // set bounds so the camera won't go outside the game world
         let heightInPixels = this.map.heightInPixels - 64;
         // if (!this.sys.game.device.os.desktop)
-            heightInPixels = this.map.heightInPixels;
+        heightInPixels = this.map.heightInPixels;
         this.cameras.main.setBounds(32, 0, this.map.widthInPixels - 32, heightInPixels);
         // make the camera follow the player
         this.cameras.main.startFollow(this.player);
@@ -149,64 +149,33 @@ export default class LevelOne extends Phaser.Scene {
             TweenHelper.flashElement(this, this.lifeImg);
         }
 
-        let dia = new Dialog(this,{windowHeight: 70, padding: 12, dialogSpeed: 4});
-        dia.setText("'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore etfdsssqsdf fqsd f fsg s arez  cxtft ytry pokpoe paojzprez  ezapoofoi  dolore magna aliqua.'",true)
+         let pauseButton = this.add.image(this.game.canvas.width - 30, 25, 'pause').setScrollFactor(0).setScale(0.15);
+        pauseButton.setInteractive().on('pointerup', () => {
+            this.scene.pause();
+            this.scene.launch('PauseScene');
+        })
+
+        // this.dialog = new Dialog(this, { windowHeight: 70, padding: 12, dialogSpeed: 4 });
+        // this.dialog.setText("'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore pokpoe paojzprez  ezapoofoi  dolore magna aliqua.'", true)
 
 
     }
 
     update(): void {
-        this.player.update();
-        console.log(this.player.x, this.player.y)
+            console.log(this.player.x, this.player.y)
+            this.player.update();
 
-        if (this.player.state !== "dying") {
-            this.lifes.forEach(life => { life.update(this.player); });
-            this.beasts.forEach(beasts => {
-                for (let beast of beasts)
-                    beast.update()
-            });
-            this.playerCollide();
-            if (this.player.y > 1280)
-                this.playerDie();
-        }
-    }
-
-    playerDie(): void {
-        this.cameras.main.fadeOut(2000);
-        this.registry.events.off('changedata');
-        this.player.die();
-        this.beasts.forEach(beasts => {
-            beasts.forEach(beast => beast.playerDie())
-        })
-        let nbrLife = this.registry.get('nbrLife');
-        this.registry.set('nbrLife', nbrLife - 1)
-
-        this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, (cam, effect) => {
-
-            if (nbrLife < 0)
-                this.scene.start('menu');
-            else {
-                this.scene.restart({ skipRegistry: true });
+            if (this.player.state !== "dying") {
+                this.lifes.forEach(life => { life.update(this.player); });
+                this.beasts.forEach(beasts => {
+                    for (let beast of beasts)
+                        beast.update()
+                });
+                this.playerCollide();
+                if (this.player.y > 1280)
+                    this.playerDie();
             }
-        })
-    }
 
-    resize(): void {
-        var canvas = this.game.canvas, width = window.innerWidth, height = window.innerHeight;
-        var wratio = width / height, ratio = canvas.width / canvas.height;
-        if (wratio < ratio) {
-            canvas.style.width = width + "px";
-            canvas.style.height = (width / ratio) + "px";
-        } else {
-            canvas.style.width = (height * ratio) + "px";
-            canvas.style.height = height + "px";
-        }
-    }
-
-    updateLifeStatus(parent, key, data) {
-        this.lifeText.setText("x" + data.toString());
-        TweenHelper.flashElement(this, this.lifeText);
-        TweenHelper.flashElement(this, this.lifeImg);;
     }
 
     playerCollide(): void {
@@ -240,4 +209,45 @@ export default class LevelOne extends Phaser.Scene {
             }
         }
     }
+
+    playerDie(): void {
+        this.cameras.main.fadeOut(2000);
+        this.registry.events.off('changedata');
+        this.player.die();
+        this.beasts.forEach(beasts => {
+            beasts.forEach(beast => beast.playerDie())
+        })
+        let nbrLife = this.registry.get('nbrLife');
+        this.registry.set('nbrLife', nbrLife - 1)
+
+        this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, (cam, effect) => {
+
+            if (nbrLife < 0)
+                this.scene.start('menu');
+            else {
+                this.scene.restart({ skipRegistry: true });
+            }
+        })
+    }
+
+    registryEvents(parent: Phaser.Game, key: string, data: boolean | number) {
+        if (key === 'nbrLife') {
+            this.lifeText.setText("x" + data.toString());
+            TweenHelper.flashElement(this, this.lifeText);
+            TweenHelper.flashElement(this, this.lifeImg);
+        }
+    }
+
+    resize(): void {
+        var canvas = this.game.canvas, width = window.innerWidth, height = window.innerHeight;
+        var wratio = width / height, ratio = canvas.width / canvas.height;
+        if (wratio < ratio) {
+            canvas.style.width = width + "px";
+            canvas.style.height = (width / ratio) + "px";
+        } else {
+            canvas.style.width = (height * ratio) + "px";
+            canvas.style.height = height + "px";
+        }
+    }
+
 }

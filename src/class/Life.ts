@@ -1,5 +1,6 @@
 import { Physics, Scene } from 'phaser';
 import GlowFilterPipelinePlugin from 'phaser3-rex-plugins/plugins/glowfilter2pipeline-plugin.js'
+import { TweenHelper } from './TweenHelper';
 
 
 export class Life extends Phaser.GameObjects.Image {
@@ -28,13 +29,14 @@ export class Life extends Phaser.GameObjects.Image {
 
         let nbrLife = this.scene.registry.get('nbrLife');
         this.scene.registry.set('nbrLife', nbrLife + 1);
-        this.setScrollFactor(0)
-        this.setX(this.x - this.scene.cameras.main.worldView.x)
-        this.setY(this.y - this.scene.cameras.main.worldView.y)
+        this.setScrollFactor(0);
+        this.setX(this.x - this.scene.cameras.main.worldView.x);
+        this.setY(this.y - this.scene.cameras.main.worldView.y);
+        TweenHelper.getLifeEffect(this.scene,this);
 
-        this.scene.tweens.add({targets: this, scale: 0.7, duration: 200, ease: 'Linear',  onComplete: ()=>{
-            this.scene.tweens.add({ targets: this, x: 20, y: 20, scale: 0.3, duration: 500, ease: 'Linear', onComplete: () => { this.destroy() } });
-        }})
+        // this.scene.tweens.add({targets: this, scale: 0.7, duration: 200, ease: 'Linear',  onComplete: ()=>{
+        //     this.scene.tweens.add({ targets: this, x: 20, y: 20, scale: 0.3, duration: 500, ease: 'Linear', onComplete: () => { this.destroy() } });
+        // }})
 
 
         // this.setVisible(false);
@@ -74,7 +76,6 @@ export class Life extends Phaser.GameObjects.Image {
             if (((px + player.body.width) >= this.x && px <= (this.x + width))
                 && ((py + player.body.height) >= this.y && py <= (this.y + height))) {
                 this.state = "destroyed";
-                console.log(this.scene)
                 this.disappearEffect();
 
             }
