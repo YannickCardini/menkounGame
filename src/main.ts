@@ -3,7 +3,6 @@ import LevelZero from './scenes/LevelZero';
 import Menu from './scenes/Menu';
 import GlowFilterPipelinePlugin from 'phaser3-rex-plugins/plugins/glowfilter2pipeline-plugin.js'
 import LevelOne from './scenes/LevelOne';
-import Pause from './scenes/PauseScene';
 import PauseScene from './scenes/PauseScene';
 import DialogScene from './scenes/DialogScene';
 

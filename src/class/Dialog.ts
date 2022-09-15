@@ -1,6 +1,12 @@
 import { Scene } from "phaser";
 import Phaser from 'phaser'
 
+export interface textAndImg {
+    text: string;
+    img: string;
+    flipImg?: boolean,
+}
+
 export class Dialog {
 
     scene: Scene;
@@ -13,7 +19,7 @@ export class Dialog {
     windowHeight: number;
     padding: number;
     closeBtnColor: string;
-    dialogSpeed: number;
+    private _dialogSpeed: number;
     eventCounter: number;
     visible: boolean;
     text: Phaser.GameObjects.Text;
@@ -21,6 +27,7 @@ export class Dialog {
     graphics: Phaser.GameObjects.Graphics;
     closeBtn: Phaser.GameObjects.Text;
     timedEvent: Phaser.Time.TimerEvent;
+    img: Phaser.GameObjects.Image;
 
     constructor(scene: Scene, opts?: any) {
         // the scene that owns the plugin
@@ -35,7 +42,7 @@ export class Dialog {
         this.borderThickness = opts.borderThickness || 3;
         this.borderColor = opts.borderColor || 0x907748;
         this.borderAlpha = opts.borderAlpha || 1;
-        this.windowAlpha = opts.windowAlpha || 0.8;
+        this.windowAlpha = opts.windowAlpha || 1;
         this.windowColor = opts.windowColor || 0x303030;
         this.windowHeight = opts.windowHeight || 150;
         this.padding = opts.padding || 32;
@@ -62,6 +69,10 @@ export class Dialog {
         if (this.eventCounter === this.dialog.length) {
             this.timedEvent.remove();
         }
+    }
+
+    animateFinish(): boolean{
+        return this.eventCounter === this.dialog.length;
     }
 
     boot(): void {
@@ -118,11 +129,16 @@ export class Dialog {
         this.graphics.strokeRect(x, y, 20, 20).setScrollFactor(0);
     }
 
+    _createImg(): void{
+        this.img  = this.scene.add.image(0, 120, 'player_sad').setOrigin(0).setScale(0.5);
+    }
+
     // Creates the dialog window
     _createWindow(): void {
         var gameHeight = this._getGameHeight();
         var gameWidth = this._getGameWidth();
         var dimensions = this._calculateWindowDimensions(gameWidth, gameHeight);
+        this._createImg();
         this.graphics = this.scene.add.graphics();
         this._createOuterWindow(dimensions.x, dimensions.y, dimensions.rectWidth, dimensions.rectHeight);
         this._createInnerWindow(dimensions.x, dimensions.y, dimensions.rectWidth, dimensions.rectHeight);
@@ -146,6 +162,14 @@ export class Dialog {
         this.shutdown();
     }
 
+    public get dialogSpeed(): number {
+        return this._dialogSpeed;
+    }
+    public set dialogSpeed(value: number) {
+        this._dialogSpeed = value;
+    }
+
+
     // Gets the width of the game (based on the scene)
     _getGameWidth(): number {
         return Number(this.scene.sys.game.config.width);
@@ -156,7 +180,20 @@ export class Dialog {
     }
 
     // Sets the text for the dialog window
-    setText(text: string, animate: boolean): void {
+    setText(text: string, animate: boolean, img: string, flipImg?: boolean): void {
+        // reset the img
+        console.log(img)
+        this.img.setTexture(img);
+        this.img.y = this.scene.sys.game.canvas.height - this.img.height/2;
+
+        if(flipImg){
+            this.img.flipX = true;
+            this.img.x = this.scene.sys.game.canvas.width - this.img.width/2;
+        }
+        else{
+            this.img.flipX = false;
+            this.img.x = 1;
+        }
         // Reset the dialog
         this.eventCounter = 0;
         this.dialog = text.split('');

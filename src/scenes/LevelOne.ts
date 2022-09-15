@@ -2,10 +2,11 @@ import Phaser, { Tilemaps } from 'phaser'
 import { Bestiaire, BestiaireConfig } from '~/class/Bestiaire';
 import { Bird } from '~/class/Bird';
 import { Boar } from '~/class/Boar';
-import { Dialog } from '~/class/Dialog';
+import { Dialog, textAndImg } from '~/class/Dialog';
 import { Life } from '~/class/Life';
 import { Mushroom } from '~/class/Mushroom';
 import { Player } from '~/class/Player';
+import { PNJ } from '~/class/PNJ';
 import { TweenHelper } from '~/class/TweenHelper';
 
 export default class LevelOne extends Phaser.Scene {
@@ -23,6 +24,8 @@ export default class LevelOne extends Phaser.Scene {
     backgrounds: Array<Phaser.GameObjects.Image>;
     pauseButton: Phaser.GameObjects.Image;
     dialog: Dialog;
+    png: PNJ;
+    dialogNumber: number;
 
     constructor() {
         super('LevelOne');
@@ -40,6 +43,7 @@ export default class LevelOne extends Phaser.Scene {
         this.load.image("life", "assets/life.png")
         // player animations
         this.load.atlas('cat', 'assets/cat-0.png', 'assets/cat.json');
+        this.load.atlas('pnj', 'assets/pnj.png', 'assets/pnj.json');
         // mushroom animations
         this.load.atlas('mushroom', 'assets/mushroom.png', 'assets/mushroom.json');
         // disappear animations
@@ -64,14 +68,13 @@ export default class LevelOne extends Phaser.Scene {
 
         //resize game if screen orientation or other
         window.addEventListener('resize', this.resize);
-        this.resize();
+        // scene-a #create
+        this.events.on('resume', (scene, data) => {
+            this.cameras.main.fadeEffect.alpha = 0;
+        });
 
+        this.dialogNumber = 0;
 
-        //  Create the nbr of life in the Registry if first time
-        if (data.skipRegistry === undefined) {
-            this.registry.set('nbrLife', 0);
-            this.time.addEvent({ delay: 500, callback: this.startDialogIntro, callbackScope: this, loop: false });
-        }
         // Add life counter at the top left corner
         this.registry.events.on('changedata', this.registryEvents, this);
 
@@ -125,8 +128,27 @@ export default class LevelOne extends Phaser.Scene {
         this.beasts = [boars, mushrooms, birds];
         // create the player sprite    
         this.player = new Player({ scene: this, x: 100, y: 400 });
+        // PNG
+        this.png = new PNJ({ scene: this, x: 3154, y: 410 });
+        this.png.flipX = true;
+
+        //  when first time scene called
+        if (data.skipRegistry === undefined) {
+            this.player.x =3000;
+            this.player.y = 300;
+            this.registry.set('nbrLife', 3);
+            this.player.disableControls = true;
+            this.player.walk('right');
+            this.player.on('animationcomplete',()=>{
+                this.player.disableControls = false;
+                this.player.state = "idle";
+                this.time.addEvent({delay:400,callback:()=>{this.startDialogScene()}});
+                this.player.off('animationcomplete');
+            })
+        }
 
         config.scene.physics.add.collider(this.groundLayer, this.player);
+        config.scene.physics.add.collider(this.groundLayer, this.png);
 
         // set bounds so the camera won't go outside the game world
         let heightInPixels = this.map.heightInPixels - 64;
@@ -152,6 +174,7 @@ export default class LevelOne extends Phaser.Scene {
 
         let pauseButton = this.add.image(this.game.canvas.width - 30, 25, 'pause').setScrollFactor(0).setScale(0.15);
         pauseButton.setInteractive().on('pointerup', () => {
+            this.cameras.main.fadeEffect.alpha = 0.3;
             this.scene.pause();
             this.scene.launch('PauseScene');
         });
@@ -163,14 +186,18 @@ export default class LevelOne extends Phaser.Scene {
         this.player.update();
 
         if (this.player.state !== "dying") {
+            this.png.update();
             this.lifes.forEach(life => { life.update(this.player); });
             this.beasts.forEach(beasts => {
                 for (let beast of beasts)
                     beast.update()
             });
             this.playerCollide();
-            if (this.player.y > 1280)
+            if (this.player.y > 700)
                 this.playerDie();
+            if (this.player.x > 3060 && (this.player.body as Phaser.Physics.Arcade.Body).onFloor() && this.dialogNumber < 4)
+                this.startDialogScene();
+
         }
 
     }
@@ -218,7 +245,6 @@ export default class LevelOne extends Phaser.Scene {
         this.registry.set('nbrLife', nbrLife)
 
         this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, (cam, effect) => {
-
             if (nbrLife < 0)
                 this.scene.start('menu');
             else {
@@ -247,9 +273,45 @@ export default class LevelOne extends Phaser.Scene {
         }
     }
 
-    startDialogIntro(): void{
-        this.scene.pause();
-        this.scene.launch("DialogScene");
+    startDialogScene(): void {
+        this.dialogNumber++;
+        let textsAndImg: Array<textAndImg> = [];
+        switch (this.dialogNumber) {
+            case 1:
+                this.cameras.main.fadeEffect.alpha = 0.8;
+                this.scene.pause();
+                textsAndImg = [
+                    { text: "Je hais cette forêt !!!", img: 'player_sad' },
+                    { text: "Et particulièrement tous ces horribles animaux ! Il faut que je me dépêche de rejoindre Caporal Coon... ", img: 'player_sad' }
+                ]
+                this.scene.launch("DialogScene", { textsAndImg: textsAndImg });
+                break;
+
+            case 2:
+                this.cameras.main.fadeEffect.alpha = 0.8;
+                this.scene.pause();
+                textsAndImg = [
+                    { text: "Meine Coon !!! Je suis si heureux de vous avoir enfin trouvé ! ", img: 'player_happy' },
+                    { text: "Le plaisir est partagé soldat Griffouille, mais hélas vous arrivez trop tot... ", img: 'pnj_serious', flipImg: true },
+                    { text: "Les instructions de mission n'arriverons pas avant Mars 2023, nous devons hélas patienter ici ", img: 'pnj_serious', flipImg: true },
+                    { text: "Non cette foret grouille d'animaux et je hais TOUS les animaux !!!", img: 'player_sad' }
+                ]
+                this.scene.launch("DialogScene", { textsAndImg: textsAndImg });
+                break;
+
+            case 3:
+                this.cameras.main.fadeOut(2000);
+                this.player.disableControls = false;
+                this.registry.set('')
+                this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+                    this.scene.start('menu');
+                })
+                break;
+
+
+            default:
+                break;
+        }
     }
 
 }

@@ -44,7 +44,7 @@ export class Bestiaire extends Physics.Arcade.Sprite {
             frameRate: 7,
         });
 
-        config.scene.time.addEvent({ delay: 500, callback: this.delayDone, callbackScope: this, loop: false });
+        config.scene.time.addEvent({ delay: 100, callback: this.delayDone, callbackScope: this, loop: false });
 
     }
 

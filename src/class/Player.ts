@@ -13,7 +13,15 @@ export class Player extends Physics.Arcade.Sprite {
     cursors: Phaser.Types.Input.Keyboard.CursorKeys;
     downKey: Phaser.Input.Keyboard.Key;
     stopAnimation: boolean;
+    private _disableControls = false;
     static readonly VELOCITY: number = 200;
+
+    public get disableControls() {
+        return this._disableControls;
+    }
+    public set disableControls(value) {
+        this._disableControls = value;
+    }
 
     constructor(config: playerConfig) {
         super(config.scene, config.x, config.y, 'cat');
@@ -21,7 +29,7 @@ export class Player extends Physics.Arcade.Sprite {
         config.scene.add.existing(this);
         config.scene.physics.add.existing(this);
         this.cursors = config.scene.input.keyboard.createCursorKeys();
-        config.scene.time.addEvent({ delay: 500, callback: this.delayDone, callbackScope: this, loop: false });
+        config.scene.time.addEvent({ delay: 100, callback: this.delayDone, callbackScope: this, loop: false });
 
         this.setScale(0.5);
         this.createAnims(config.scene);
@@ -45,8 +53,8 @@ export class Player extends Physics.Arcade.Sprite {
             case "running":
                 this.anims.play("run", true);
                 break;
-            case "sliding":
-                this.anims.play("slide", true);
+            case "walking":
+                this.anims.play("walk", true);
                 break;
             case "dying":
                 this.anims.play("dead", true);
@@ -73,7 +81,7 @@ export class Player extends Physics.Arcade.Sprite {
         else if (this.cursors.left.isDown) // if the left arrow key is down
             this.run();
         else if (this.cursors.right.isDown) // if the right arrow key is down
-            this.run(false);
+            this.run('right');
         else
             this.setVelocityX(0);
     }
@@ -96,7 +104,7 @@ export class Player extends Physics.Arcade.Sprite {
             this.run();
         });
         rightButton.on('pointerdown', () => {
-            this.run(false);
+            this.run('right');
         });
         slideButton.on('pointerdown', () => {
             this.slide();
@@ -136,7 +144,7 @@ export class Player extends Physics.Arcade.Sprite {
             key: "walk",
             frames: scene.anims.generateFrameNames('cat', { prefix: 'p1_walk', start: 1, end: 10, zeroPad: 2 }),
             frameRate: 10,
-            repeat: -1
+            repeat: 1
         });
 
         scene.anims.create({
@@ -195,10 +203,12 @@ export class Player extends Physics.Arcade.Sprite {
         if (this.state === "sliding" || this.state === "dying")
             return this.state;
         if ((this.body as Phaser.Physics.Arcade.Body).onFloor()) {
-            if (this.body.velocity.x !== 0)
-                return "running";
-            else
+            if (this.body.velocity.x === 0)
                 return "idling";
+            else if (this.body.velocity.x === 50)
+                return 'walking'
+            else
+                return "running";
         }
         else {
             if (this.body.velocity.y < 0)
@@ -224,10 +234,11 @@ export class Player extends Physics.Arcade.Sprite {
         }
     }
 
-    run(left = true): void {
-        let isNegatif = left ? -1 : 1;
-        this.setVelocityX(isNegatif * Player.VELOCITY); // move left
-        this.flipX = left; // flip the sprite to the left
+    run(direction = 'left'): void {
+        let isLeft = direction === 'left' ? true: false;
+        let isNegatif = isLeft ? -1 : 1;
+        this.setVelocityX(isNegatif * Player.VELOCITY); 
+        this.flipX = isLeft; 
     }
 
     slide(): void {
@@ -250,12 +261,22 @@ export class Player extends Physics.Arcade.Sprite {
             this.animation();
         if (this.state !== "dying") {
             this.state = this.getCurrentState();
-            if (this.config.scene.sys.game.device.os.desktop) 
+            if(!this.disableControls){
+                if (this.config.scene.sys.game.device.os.desktop) 
                 this.controlsDesktop();
             else 
                 this.controlsMobile();
+            }
+
             
         }
+    }
+
+    walk(direction = 'left'): void {
+        let isLeft = direction === 'left' ? true: false;
+        let isNegatif = isLeft ? -1 : 1;
+        this.setVelocityX(isNegatif * Player.VELOCITY/4); 
+        this.flipX = isLeft; 
     }
 }
 
