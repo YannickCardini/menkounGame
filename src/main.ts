@@ -44,7 +44,7 @@ const config: Phaser.Types.Core.GameConfig = {
 
 	},
 	
-	scene: [LevelOne,Menu,LevelZero,PauseScene,DialogScene]
+	scene: [Menu,LevelOne,PauseScene,DialogScene]
 }
 
 export default new Phaser.Game(config)

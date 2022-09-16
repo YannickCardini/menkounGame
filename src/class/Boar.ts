@@ -22,8 +22,7 @@ export class Boar extends Bestiaire {
 
         this.scene = config.scene;
 
-        let scale = Phaser.Math.Between(3, 6);
-        console.log(scale)
+        let scale = Phaser.Math.Between(3, 5);
 
         this.setScale(scale*0.1);
 

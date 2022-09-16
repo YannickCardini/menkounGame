@@ -29,7 +29,6 @@ export class Bird extends Bestiaire {
     animations() {
         switch (this.state) {
             case 'dying':
-                console.log("here")
                 this.anims.play("bird_dying",true);
             default:
                 this.anims.play("fly", true);

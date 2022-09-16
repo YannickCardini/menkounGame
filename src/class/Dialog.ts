@@ -182,7 +182,6 @@ export class Dialog {
     // Sets the text for the dialog window
     setText(text: string, animate: boolean, img: string, flipImg?: boolean): void {
         // reset the img
-        console.log(img)
         this.img.setTexture(img);
         this.img.y = this.scene.sys.game.canvas.height - this.img.height/2;
 

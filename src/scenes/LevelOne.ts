@@ -64,7 +64,7 @@ export default class LevelOne extends Phaser.Scene {
         }
     }
 
-    create(data: { skipRegistry: boolean }) {
+    create(data: { firstTime: boolean }) {
 
         //resize game if screen orientation or other
         window.addEventListener('resize', this.resize);
@@ -73,10 +73,6 @@ export default class LevelOne extends Phaser.Scene {
             this.cameras.main.fadeEffect.alpha = 0;
         });
 
-        this.dialogNumber = 0;
-
-        // Add life counter at the top left corner
-        this.registry.events.on('changedata', this.registryEvents, this);
 
         // // Create background layers
         for (let i = 11; i > (LevelOne.backgroundLayersStart - 1); i--) {
@@ -84,6 +80,8 @@ export default class LevelOne extends Phaser.Scene {
             this.add.image(1024, 0, 'background-' + i).setScale(0.5).setOrigin(0).setScrollFactor(2 / i, 1);
             // this.add.image(2048, 0, 'background-' + i).setScale(0.5).setOrigin(0).setScrollFactor(2 / i, 1);
         }
+        this.add.image(2048, 0, 'background-' + 2).setScale(0.5).setOrigin(0).setScrollFactor(1, 1);
+
 
         const tilemapConfig: Phaser.Types.Tilemaps.TilemapConfig = {
             key: "map",
@@ -132,20 +130,41 @@ export default class LevelOne extends Phaser.Scene {
         this.png = new PNJ({ scene: this, x: 3154, y: 410 });
         this.png.flipX = true;
 
+        // Add life counter at the top left corner     
+        const style: Phaser.Types.GameObjects.Text.TextStyle = { font: "12pt Courier", color: "#ffb000", strokeThickness: 1, stroke: "#000000" }
+        this.lifeImg = this.add.image(20, 20, 'life').setScrollFactor(0).setScale(0.3);
+        this.lifeText = this.add.text(35, 12, "x" + this.registry.get('nbrLife').toString(), style).setScrollFactor(0);
+
+        let pauseButton = this.add.image(this.game.canvas.width - 30, 25, 'pause').setScrollFactor(0).setScale(0.15);
+        pauseButton.setInteractive().on('pointerup', () => {
+            this.cameras.main.fadeEffect.alpha = 0.3;
+            this.scene.pause();
+            this.scene.launch('PauseScene');
+        });
         //  when first time scene called
-        if (data.skipRegistry === undefined) {
-            this.player.x =3000;
-            this.player.y = 300;
+        if (data.firstTime) {
             this.registry.set('nbrLife', 3);
+            this.dialogNumber = 0;
+            this.player.x = 10;
+            this.player.y = 515;
             this.player.disableControls = true;
             this.player.walk('right');
-            this.player.on('animationcomplete',()=>{
-                this.player.disableControls = false;
-                this.player.state = "idle";
-                this.time.addEvent({delay:400,callback:()=>{this.startDialogScene()}});
-                this.player.off('animationcomplete');
-            })
+            this.time.addEvent({
+                delay: 2000, callback: () => {
+                    this.player.disableControls = false;
+                    this.player.state = "idle";
+                    this.time.addEvent({ delay: 400, callback: () => { this.startDialogScene() } });
+                }
+            });
         }
+
+
+
+        if (!data.firstTime) {
+            TweenHelper.flashElement(this, this.lifeText);
+            TweenHelper.flashElement(this, this.lifeImg);
+        }
+        this.registry.events.on('changedata', this.registryEvents, this);
 
         config.scene.physics.add.collider(this.groundLayer, this.player);
         config.scene.physics.add.collider(this.groundLayer, this.png);
@@ -164,25 +183,12 @@ export default class LevelOne extends Phaser.Scene {
 
         this.lifes = [new Life(this, 960, 45), new Life(this, 100, 1100)];
 
-        const style: Phaser.Types.GameObjects.Text.TextStyle = { font: "12pt Courier", color: "#ffb000", strokeThickness: 1, stroke: "#000000" }
-        this.lifeImg = this.add.image(20, 20, 'life').setScrollFactor(0).setScale(0.3);
-        this.lifeText = this.add.text(35, 12, "x" + this.registry.get('nbrLife').toString(), style).setScrollFactor(0);
-        if (data.skipRegistry !== undefined) {
-            TweenHelper.flashElement(this, this.lifeText);
-            TweenHelper.flashElement(this, this.lifeImg);
-        }
 
-        let pauseButton = this.add.image(this.game.canvas.width - 30, 25, 'pause').setScrollFactor(0).setScale(0.15);
-        pauseButton.setInteractive().on('pointerup', () => {
-            this.cameras.main.fadeEffect.alpha = 0.3;
-            this.scene.pause();
-            this.scene.launch('PauseScene');
-        });
 
     }
 
     update(): void {
-        console.log(this.player.x, this.player.y)
+        // console.log(this.player.x, this.player.y)
         this.player.update();
 
         if (this.player.state !== "dying") {
@@ -197,9 +203,7 @@ export default class LevelOne extends Phaser.Scene {
                 this.playerDie();
             if (this.player.x > 3060 && (this.player.body as Phaser.Physics.Arcade.Body).onFloor() && this.dialogNumber < 4)
                 this.startDialogScene();
-
         }
-
     }
 
     playerCollide(): void {
@@ -248,13 +252,13 @@ export default class LevelOne extends Phaser.Scene {
             if (nbrLife < 0)
                 this.scene.start('menu');
             else {
-                this.scene.restart({ skipRegistry: true });
+                this.scene.restart({ firstTime: false });
             }
         })
     }
 
     registryEvents(parent: Phaser.Game, key: string, data: boolean | number) {
-        if (key === 'nbrLife') {
+        if (key === 'nbrLife' && this.lifeText) {
             this.lifeText.setText("x" + data.toString());
             TweenHelper.flashElement(this, this.lifeText);
             TweenHelper.flashElement(this, this.lifeImg);
@@ -291,18 +295,20 @@ export default class LevelOne extends Phaser.Scene {
                 this.cameras.main.fadeEffect.alpha = 0.8;
                 this.scene.pause();
                 textsAndImg = [
-                    { text: "Meine Coon !!! Je suis si heureux de vous avoir enfin trouvé ! ", img: 'player_happy' },
-                    { text: "Le plaisir est partagé soldat Griffouille, mais hélas vous arrivez trop tot... ", img: 'pnj_serious', flipImg: true },
-                    { text: "Les instructions de mission n'arriverons pas avant Mars 2023, nous devons hélas patienter ici ", img: 'pnj_serious', flipImg: true },
-                    { text: "Non cette foret grouille d'animaux et je hais TOUS les animaux !!!", img: 'player_sad' }
+                    { text: "Meine Coon !!! Je suis si heureux d'enfin vous retrouver ! Je vais pouvoir enfin quitter cette maudite nature !", img: 'player_happy' },
+                    { text: "Le plaisir est partagé soldat Griffouille, mais hélas vous arrivez trop tôt.", img: 'pnj_serious', flipImg: true },
+                    { text: "Aucune mission d'extraction de cette forêt n'est prévue avant mars 2023, on va devoir hélas patienter ici...", img: 'pnj_serious', flipImg: true },
+                    { text: "Non Meine Coon ! Je HAIS cette forêt et tous les animaux qui la peuplent !", img: 'player_sad' },
+                    { text: "Courage soldat Grifouille, armez-vous de patience.", img: 'pnj_serious', flipImg: true }
+
                 ]
                 this.scene.launch("DialogScene", { textsAndImg: textsAndImg });
                 break;
 
             case 3:
                 this.cameras.main.fadeOut(2000);
-                this.player.disableControls = false;
-                this.registry.set('')
+                this.registry.events.off('changedata');
+                this.player.disableControls = true;
                 this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
                     this.scene.start('menu');
                 })

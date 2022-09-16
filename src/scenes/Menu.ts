@@ -131,7 +131,8 @@ export default class Menu extends Phaser.Scene {
         })
 
         playButton.on('confirm', () => {
-            this.scene.start('LevelOne', { skipRegistry: undefined });
+            this.registry.set('nbrLife', 3);
+            this.scene.start('LevelOne',{ firstTime: true });
         })
 
         donnerButton.on('confirm', () => {
@@ -161,7 +162,6 @@ export default class Menu extends Phaser.Scene {
     }
 
     selectButton(index: number) {
-        console.log("index: ", index)
         const currentButton = this.buttons[this.selectedButtonIndex];
 
         // set the current selected button to a white tint
