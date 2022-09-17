@@ -73,7 +73,7 @@ export default class LevelOne extends Phaser.Scene {
         this.ratio = width / 620;
 
         //resize game if screen orientation or other
-        window.addEventListener('resize', this.resize);
+        // window.addEventListener('resize', this.resize);
         // scene-a #create
         this.events.on('resume', (scene, data) => {
             // @ts-ignore
@@ -117,7 +117,7 @@ export default class LevelOne extends Phaser.Scene {
             x: LevelOne.tileSize * 10,
             y: this.map.heightInPixels - 4 * LevelOne.tileSize,
             state: "moving_right",
-            movingRangeX1: LevelOne.tileSize * 5,
+            movingRangeX1: LevelOne.tileSize * 7,
             movingRangeX2: LevelOne.tileSize * 14,
             ground: this.groundLayer
         }
@@ -174,8 +174,8 @@ export default class LevelOne extends Phaser.Scene {
         this.cameras.main.ignore(this.ui);
 
         this.cameras.main.setBounds(LevelOne.tileSize, 0, this.map.widthInPixels - LevelOne.tileSize, this.map.heightInPixels);
-
-        UICam.ignore(this.children.list.filter((child: Phaser.GameObjects.GameObject) => child.constructor.name !== "UI"));
+        console.log(this.children.list[0].constructor.name))
+        UICam.ignore(this.children.list.filter((child: Phaser.GameObjects.GameObject) => !(child instanceof UI)));
 
         // make the camera follow the player
         this.cameras.main.startFollow(this.player);
@@ -264,17 +264,17 @@ export default class LevelOne extends Phaser.Scene {
         })
     }
 
-    resize(): void {
-        var canvas = this.game.canvas, width = window.innerWidth, height = window.innerHeight;
-        var wratio = width / height, ratio = canvas.width / canvas.height;
-        if (wratio < ratio) {
-            canvas.style.width = width + "px";
-            canvas.style.height = (width / ratio) + "px";
-        } else {
-            canvas.style.width = (height * ratio) + "px";
-            canvas.style.height = height + "px";
-        }
-    }
+    // resize(): void {
+    //     var canvas = this.game.canvas, width = window.innerWidth, height = window.innerHeight;
+    //     var wratio = width / height, ratio = canvas.width / canvas.height;
+    //     if (wratio < ratio) {
+    //         canvas.style.width = width + "px";
+    //         canvas.style.height = (width / ratio) + "px";
+    //     } else {
+    //         canvas.style.width = (height * ratio) + "px";
+    //         canvas.style.height = height + "px";
+    //     }
+    // }
 
     startDialogScene(): void {
         this.dialogNumber++;

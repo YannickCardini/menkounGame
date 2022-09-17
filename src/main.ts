@@ -9,6 +9,8 @@ import DialogScene from './scenes/DialogScene';
 const WIDTH = 930;
 const HEIGHT = 480;
 
+console.log('version 1')
+
 
 const widthHeight = {
 	width: WIDTH,
@@ -39,7 +41,7 @@ const config: Phaser.Types.Core.GameConfig = {
 		default: 'arcade',
 		arcade: {
 			gravity: { y: 800 },
-			debug: true
+			debug: false
 		}
 
 	},
