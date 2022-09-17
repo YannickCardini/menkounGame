@@ -15,8 +15,9 @@ export default class DialogScene extends Phaser.Scene {
     }
 
     create(data: { textsAndImg: Array<textAndImg>, levelFinish?: boolean }) {
+        let { width, height } = this.sys.game.canvas;
         this.counter = 0;
-        let dialog = new Dialog(this, { windowHeight: 60, padding: 12, dialogSpeed: 4 });
+        let dialog = new Dialog(this, { windowHeight: width/10, padding: height/20, dialogSpeed: 4 });
         const tai = data.textsAndImg;
         dialog.setText(tai[this.counter].text, true, tai[this.counter].img, tai[this.counter].flipImg);
         this.input.on('pointerup', () => {

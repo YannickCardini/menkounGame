@@ -130,7 +130,8 @@ export class Dialog {
     }
 
     _createImg(): void{
-        this.img  = this.scene.add.image(0, 120, 'player_sad').setOrigin(0).setScale(0.5);
+        let width = this.scene.sys.game.canvas.width;
+        this.img  = this.scene.add.image(0, 120, 'player_sad').setOrigin(0).setScale(width/1240);
     }
 
     // Creates the dialog window
@@ -182,12 +183,13 @@ export class Dialog {
     // Sets the text for the dialog window
     setText(text: string, animate: boolean, img: string, flipImg?: boolean): void {
         // reset the img
+        let { width, height } = this.scene.sys.game.canvas;
         this.img.setTexture(img);
-        this.img.y = this.scene.sys.game.canvas.height - this.img.height/2;
+        this.img.y = height - this.img.height/2;
 
         if(flipImg){
             this.img.flipX = true;
-            this.img.x = this.scene.sys.game.canvas.width - this.img.width/2;
+            this.img.x = width - this.img.width/2;
         }
         else{
             this.img.flipX = false;

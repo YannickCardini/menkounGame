@@ -138,5 +138,5 @@ Change 8000 to whatever you want.
 ## Send to staging
 
 ```
-npm run build && sudo scp /home/loubard/Documents/menkoun\ game/menkounGame/dist/* ubuntu@51.79.255.217:/var/www/mainecoon.click/html
+npm run build && rsync -av -e ssh /home/loubard/Documents/menkoun\ game/menkounGame/dist/ ubuntu@51.79.255.217:/var/www/mainecoon.click/html/
 ```

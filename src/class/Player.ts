@@ -13,6 +13,10 @@ export class Player extends Physics.Arcade.Sprite {
     cursors: Phaser.Types.Input.Keyboard.CursorKeys;
     downKey: Phaser.Input.Keyboard.Key;
     stopAnimation: boolean;
+    jumpButton: Phaser.GameObjects.Image;
+    slideButton: Phaser.GameObjects.Image;
+    leftButton: Phaser.GameObjects.Image;
+    rightButton: Phaser.GameObjects.Image;
     private _disableControls = false;
     static readonly VELOCITY: number = 200;
 
@@ -24,6 +28,7 @@ export class Player extends Physics.Arcade.Sprite {
     }
 
     constructor(config: playerConfig) {
+
         super(config.scene, config.x, config.y, 'cat');
 
         config.scene.add.existing(this);
@@ -31,12 +36,16 @@ export class Player extends Physics.Arcade.Sprite {
         this.cursors = config.scene.input.keyboard.createCursorKeys();
         config.scene.time.addEvent({ delay: 100, callback: this.delayDone, callbackScope: this, loop: false });
 
-        this.setScale(0.5);
+        let width = config.scene.sys.game.canvas.width;
+        let height = config.scene.sys.game.canvas.height;
+        this.setScale(width/1240);
         this.createAnims(config.scene);
 
         this.config = config;
         this.stopAnimation = false;
         this.downKey = config.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
+        if (!this.config.scene.sys.game.device.os.desktop)
+            this.createControlsMobile();
     }
 
     animation(): void {
@@ -88,25 +97,19 @@ export class Player extends Physics.Arcade.Sprite {
 
     controlsMobile(): void {
 
-        let worldX = this.config.scene.cameras.main.worldView.x;
-        let worldY = this.config.scene.cameras.main.worldView.y;
 
-        let jumpButton = this.config.scene.add.image(worldX + 513, worldY + 238, 'jump_button').setScrollFactor(0).setInteractive().setScale(0.25);
-        let slideButton = this.config.scene.add.image(jumpButton.x + 50, jumpButton.y + 45, 'slide_button').setScrollFactor(0).setInteractive().setScale(0.25);
-        let leftButton = this.config.scene.add.image(worldX + 50, slideButton.y, 'left_button').setScrollFactor(0).setInteractive().setScale(0.25);
-        let rightButton = this.config.scene.add.image(leftButton.x + 70, leftButton.y, 'right_button').setScrollFactor(0).setInteractive().setScale(0.25);
         // let fullScreenButton = this.config.scene.add.image(worldX + 580, worldY + 30, 'fullScreen_button').setScrollFactor(0).setInteractive();
 
-        jumpButton.on('pointerdown', () => {
+        this.jumpButton.on('pointerdown', () => {
             this.jump();
         });
-        leftButton.on('pointerdown', () => {
+        this.leftButton.on('pointerdown', () => {
             this.run();
         });
-        rightButton.on('pointerdown', () => {
+        this.rightButton.on('pointerdown', () => {
             this.run('right');
         });
-        slideButton.on('pointerdown', () => {
+        this.slideButton.on('pointerdown', () => {
             this.slide();
             this.pointerUp();
         });
@@ -122,19 +125,6 @@ export class Player extends Physics.Arcade.Sprite {
         //         this.config.scene.scale.startFullscreen();
         //     }
         // }, this);
-
-
-        // jumpButton.on('pointerup', () => {
-        //     this.pointerUp();
-        // });
-
-        // leftButton.on('pointerup', () => {
-        //     this.pointerUp();
-
-        // });
-        // rightButton.on('pointerup', () => {
-        //     this.pointerUp();
-        // });
 
     }
 
@@ -187,8 +177,18 @@ export class Player extends Physics.Arcade.Sprite {
 
     }
 
+    createControlsMobile() {
+        let worldX = this.config.scene.cameras.main.worldView.x;
+        let worldY = this.config.scene.cameras.main.worldView.y;
+
+        this.jumpButton = this.config.scene.add.image(worldX + 513, worldY + 238, 'jump_button').setScrollFactor(0).setInteractive().setScale(0.25);
+        this.slideButton = this.config.scene.add.image(this.jumpButton.x + 50, this.jumpButton.y + 45, 'slide_button').setScrollFactor(0).setInteractive().setScale(0.25);
+        this.leftButton = this.config.scene.add.image(worldX + 50, this.slideButton.y, 'left_button').setScrollFactor(0).setInteractive().setScale(0.25);
+        this.rightButton = this.config.scene.add.image(this.leftButton.x + 70, this.leftButton.y, 'right_button').setScrollFactor(0).setInteractive().setScale(0.25);
+    }
+
     delayDone(): void {
-        this.body.setSize(this.width - 80, this.height - 3, true);
+        this.body.setSize(this.width - 160*this.scale, this.height-20*this.scale, true);
     }
 
     die(): void {
@@ -235,10 +235,10 @@ export class Player extends Physics.Arcade.Sprite {
     }
 
     run(direction = 'left'): void {
-        let isLeft = direction === 'left' ? true: false;
+        let isLeft = direction === 'left' ? true : false;
         let isNegatif = isLeft ? -1 : 1;
-        this.setVelocityX(isNegatif * Player.VELOCITY); 
-        this.flipX = isLeft; 
+        this.setVelocityX(isNegatif * Player.VELOCITY);
+        this.flipX = isLeft;
     }
 
     slide(): void {
@@ -261,22 +261,22 @@ export class Player extends Physics.Arcade.Sprite {
             this.animation();
         if (this.state !== "dying") {
             this.state = this.getCurrentState();
-            if(!this.disableControls){
-                if (this.config.scene.sys.game.device.os.desktop) 
-                this.controlsDesktop();
-            else 
-                this.controlsMobile();
+            if (!this.disableControls) {
+                if (this.config.scene.sys.game.device.os.desktop)
+                    this.controlsDesktop();
+                else
+                    this.controlsMobile();
             }
 
-            
+
         }
     }
 
     walk(direction = 'left'): void {
-        let isLeft = direction === 'left' ? true: false;
+        let isLeft = direction === 'left' ? true : false;
         let isNegatif = isLeft ? -1 : 1;
-        this.setVelocityX(isNegatif * Player.VELOCITY/4); 
-        this.flipX = isLeft; 
+        this.setVelocityX(isNegatif * Player.VELOCITY / 4);
+        this.flipX = isLeft;
     }
 }
 

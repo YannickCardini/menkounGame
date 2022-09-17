@@ -3,7 +3,7 @@ export default class Menu extends Phaser.Scene {
     private buttons: Phaser.GameObjects.Image[] = []
     private selectedButtonIndex = 0
     private buttonSelector!: Phaser.GameObjects.Image
-    private fontSize = 30;
+    private fontSize: number;
     player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
 
     constructor() {
@@ -23,75 +23,70 @@ export default class Menu extends Phaser.Scene {
 
     create() {
 
+        let { width, height } = this.sys.game.canvas;
+
+        this.fontSize = height/10;
         this.buttons = [];
         this.cursors = this.input.keyboard.createCursorKeys();
         this.selectedButtonIndex = 0
-        this.fontSize = 30;
+        this.fontSize = width/20;
 
-        let { width, height } = this.sys.game.canvas;
-
-        var clouds = this.add.image(100, 32, 'clouds').setOrigin(0).setPipeline('Light2D');
+        var clouds = this.add.image(width/6, height/10, 'clouds').setOrigin(0).setPipeline('Light2D');
 
         this.tweens.add({
             targets: clouds,
-            x: -1250,
+            x: -width*2,
             ease: 'Linear',
             duration: 400000,
             repeat: -1
         });
 
         var ground = this.add.image(width / 2, height / 2, 'ground');
+        ground.setScale(width/ground.width);
         ground.setPipeline('Light2D');
 
-        var pic = this.add.image(100, 240, 'poteau');
-        pic.setPipeline('Light2D');
+        // var pic = this.add.image(100, 240, 'poteau');
+        // pic.setPipeline('Light2D');
 
         this.lights.enable().setAmbientColor(0x333333);
-        var light = this.lights.addLight(115, 226, 200).setIntensity(2);
-
-        this.tweens.add({
-            targets: [light],
-            y: 200,
-            ease: 'Sine.easeInOut',
-            yoyo: true,
-            repeat: -1,
-            duration: 3000
-        });
+        this.lights.addLight(width*0.19, height*0.72, 200).setIntensity(2);
 
         // We must enable the light system. By default is disabled
         this.lights.enable();
 
-        this.player = this.physics.add.sprite(60, 260, 'cat').setScale(0.5);
+        this.player = this.physics.add.sprite(width/10, height*0.82, 'cat');
+        this.player.setScale((width*0.11)/this.player.width);
         this.player.body.setAllowGravity(false);
         this.player.setPipeline('Light2D');
 
         this.anims.create({
-            key: "walk",
-            frames: this.anims.generateFrameNames('cat', { prefix: 'p1_walk', start: 1, end: 10, zeroPad: 2 }),
+            key: "idle",
+            frames: this.anims.generateFrameNames('cat', { prefix: 'p1_idle', start: 1, end: 10, zeroPad: 2 }),
             frameRate: 10,
             repeat: -1
         });
 
-        this.add.image(170, 60, 'logo').setScale(0.2);
-        const tintedText = this.add.bitmapText(30, 90, 'desyrel', '', 40).setTint(0xffa500, 0xffa500, 0xffa500, 0xffa500);
+        let logo = this.add.image(width/3, height/5, 'logo');
+        logo.setScale((width/2)/logo.width);
+        const tintedText = this.add.bitmapText(width/10, height/3, 'desyrel', '', this.fontSize).setTint(0xffa500, 0xffa500, 0xffa500, 0xffa500);
 
         // Play button
         const playButton = this.add.image(width * 0.8, height * 0.3, 'metal-panel')
-            .setDisplaySize(150, 50).setInteractive({ cursor: 'pointer' });
+            .setDisplaySize(width/4, height/6).setInteractive({ cursor: 'pointer' });
 
         this.add.bitmapText(playButton.x, playButton.y, 'desyrel', 'Jouer', this.fontSize)
             .setOrigin(0.5, 0.5);
 
         // Settings button
         const donnerButton = this.add.image(playButton.x, playButton.y + playButton.displayHeight + 10, 'metal-panel')
-            .setDisplaySize(150, 50).setInteractive({ cursor: 'pointer' });
+            .setDisplaySize(width/4, height/6).setInteractive({ cursor: 'pointer' });
 
         this.add.bitmapText(donnerButton.x, donnerButton.y, 'desyrel', 'Donner', this.fontSize)
             .setOrigin(0.5, 0.5);
 
         // Credits button
         const adoptButton = this.add.image(donnerButton.x, donnerButton.y + donnerButton.displayHeight + 10, 'metal-panel')
-            .setDisplaySize(150, 50).setInteractive({ cursor: 'pointer' });
+            .setDisplaySize(width/4, height/6).setInteractive({ cursor: 'pointer' });
 
         this.add.bitmapText(adoptButton.x, adoptButton.y, 'desyrel', 'Adopter', this.fontSize)
             .setOrigin(0.5, 0.5);
@@ -101,6 +96,7 @@ export default class Menu extends Phaser.Scene {
         this.buttons.push(adoptButton);
 
         this.buttonSelector = this.add.image(0, 0, 'cursor-hand');
+        this.buttonSelector.setScale(width/620)
         this.selectButton(0);
 
         playButton.on('selected', () => {
@@ -204,7 +200,7 @@ export default class Menu extends Phaser.Scene {
     }
 
     update() {
-        this.player.anims.play("walk", true);
+        this.player.anims.play("idle", true);
         const upJustPressed = Phaser.Input.Keyboard.JustDown(this.cursors.up!)
         const downJustPressed = Phaser.Input.Keyboard.JustDown(this.cursors.down!)
         const spaceJustPressed = Phaser.Input.Keyboard.JustDown(this.cursors.space!)
