@@ -130,8 +130,7 @@ export class Dialog {
     }
 
     _createImg(): void{
-        let width = this.scene.sys.game.canvas.width;
-        this.img  = this.scene.add.image(0, 120, 'player_sad').setOrigin(0).setScale(width/1240);
+        this.img  = this.scene.add.image(0, 120, 'player_sad').setOrigin(0);
     }
 
     // Creates the dialog window
@@ -185,11 +184,12 @@ export class Dialog {
         // reset the img
         let { width, height } = this.scene.sys.game.canvas;
         this.img.setTexture(img);
-        this.img.y = height - this.img.height/2;
+        this.img.y = height - this.img.height/(1240/width);
+        this.img.setScale(width/1240);
 
         if(flipImg){
             this.img.flipX = true;
-            this.img.x = width - this.img.width/2;
+            this.img.x = width - this.img.width/(1240/width);
         }
         else{
             this.img.flipX = false;
@@ -222,7 +222,8 @@ export class Dialog {
             y,
             text,
             style: {
-                wordWrap: { width: this._getGameWidth() - (this.padding * 2) - 25 }
+                wordWrap: { width: this._getGameWidth() - (this.padding * 2) - 25 },
+                fontSize: (this.scene.sys.canvas.height/20).toString() + 'px'
             }
         }).setScrollFactor(0);
     }

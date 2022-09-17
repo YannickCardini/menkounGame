@@ -6,8 +6,8 @@ import LevelOne from './scenes/LevelOne';
 import PauseScene from './scenes/PauseScene';
 import DialogScene from './scenes/DialogScene';
 
-const WIDTH = 620;
-const HEIGHT = 320;
+const WIDTH = 1240;
+const HEIGHT = 640;
 
 
 const widthHeight = {
@@ -39,7 +39,7 @@ const config: Phaser.Types.Core.GameConfig = {
 		default: 'arcade',
 		arcade: {
 			gravity: { y: 800 },
-			debug: false
+			debug: true
 		}
 
 	},

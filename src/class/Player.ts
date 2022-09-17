@@ -36,9 +36,8 @@ export class Player extends Physics.Arcade.Sprite {
         this.cursors = config.scene.input.keyboard.createCursorKeys();
         config.scene.time.addEvent({ delay: 100, callback: this.delayDone, callbackScope: this, loop: false });
 
-        let width = config.scene.sys.game.canvas.width;
-        let height = config.scene.sys.game.canvas.height;
-        this.setScale(width/1240);
+        // this.setScale(width/1240);
+        this.setScale(0.5)
         this.createAnims(config.scene);
 
         this.config = config;

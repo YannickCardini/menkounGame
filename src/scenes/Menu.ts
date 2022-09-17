@@ -13,7 +13,7 @@ export default class Menu extends Phaser.Scene {
     preload() {
         this.load.image('metal-panel', 'assets/menu/metalPanel.png');
         this.load.image('cursor-hand', 'assets/menu/cursor_hand.png');
-        this.load.atlas('cat', 'assets/cat-0.png', 'assets/cat.json');
+        this.load.atlas('cat', 'assets/player.png', 'assets/player.json');
         this.load.image('clouds', 'assets/menu/clouds.png');
         this.load.image('poteau', 'assets/menu/poteau.png');
         this.load.image('ground', 'assets/menu/menu_ground.png');

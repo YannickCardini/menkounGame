@@ -45,7 +45,7 @@ export default class LevelOne extends Phaser.Scene {
         // life info
         this.load.image("life", "assets/life.png")
         // player animations
-        this.load.atlas('cat', 'assets/cat-0.png', 'assets/cat.json');
+        this.load.atlas('cat', 'assets/player.png', 'assets/player.json');
         this.load.atlas('pnj', 'assets/pnj.png', 'assets/pnj.json');
         // mushroom animations
         this.load.atlas('mushroom', 'assets/mushroom.png', 'assets/mushroom.json');
@@ -71,7 +71,6 @@ export default class LevelOne extends Phaser.Scene {
 
         let { width, height } = this.sys.game.canvas;
         this.ratio = width/620;
-        console.log(this.ratio)
 
         //resize game if screen orientation or other
         window.addEventListener('resize', this.resize);
@@ -85,12 +84,13 @@ export default class LevelOne extends Phaser.Scene {
 
         for (let i = 11; i > (LevelOne.backgroundLayersStart - 1); i--) {
             let img = this.add.image(0, 0, 'background-' + i).setOrigin(0).setScrollFactor(2 / i, 1);
-            img.setScale((width * 1.65) / img.width);
+            img.setScale(LevelOne.tileSize/64);
             img = this.add.image(img.width * img.scaleX, 0, 'background-' + i).setOrigin(0).setScrollFactor(2 / i, 1);
-            img.setScale((width * 1.65) / img.width);
-            img = this.add.image(img.width * img.scaleX * 2, 0, 'background-' + i).setOrigin(0).setScrollFactor(2 / i, 1);
-            img.setScale((width * 1.65) / img.width);
+            img.setScale(LevelOne.tileSize/64);
+            img = this.add.image(img.width*2 * img.scaleX, 0, 'background-' + i).setOrigin(0).setScrollFactor(2 / i, 1);
+            img.setScale(LevelOne.tileSize/64);
         }
+
 
         const tilemapConfig: Phaser.Types.Tilemaps.TilemapConfig = {
             key: "map",
@@ -113,11 +113,11 @@ export default class LevelOne extends Phaser.Scene {
 
         let config: BestiaireConfig = {
             scene: this,
-            x: width*0.8,
+            x: LevelOne.tileSize*10,
             y: this.map.heightInPixels - 4*LevelOne.tileSize,
             state: "moving_right",
-            movingRangeX1: width*0.4,
-            movingRangeX2: width*0.9,
+            movingRangeX1: LevelOne.tileSize*5,
+            movingRangeX2: LevelOne.tileSize*14,
             ground: this.groundLayer
         }
 
@@ -130,17 +130,17 @@ export default class LevelOne extends Phaser.Scene {
                 new Bird({ scene: this, x: LevelOne.tileSize*80, y: LevelOne.tileSize*15, movingRangeX1: -LevelOne.tileSize*80, movingRangeX2: LevelOne.tileSize*80 }),
 
             ];
-        let boars = [new Boar({ scene: this, x: LevelOne.tileSize*24, y: LevelOne.tileSize*16, movingRangeX1: LevelOne.tileSize*24, movingRangeX2: LevelOne.tileSize*43, ground: this.groundLayer })];
+        let boars = [new Boar({ scene: this, x: LevelOne.tileSize*25, y: LevelOne.tileSize*16, movingRangeX1: LevelOne.tileSize*25, movingRangeX2: LevelOne.tileSize*43, ground: this.groundLayer })];
 
         this.beasts = [boars, mushrooms, birds];
         // create the player sprite    
-        this.player = new Player({ scene: this, x: width*0.2, y: height*1.2 });
+        this.player = new Player({ scene: this, x: LevelOne.tileSize*4, y: this.map.heightInPixels - LevelOne.tileSize*8 });
         // PNG
         this.png = new PNJ({ scene: this, x: LevelOne.tileSize*98, y: LevelOne.tileSize*13 });
         this.png.flipX = true;
 
         // Add life counter at the top left corner     
-        const style: Phaser.Types.GameObjects.Text.TextStyle = { font: "13pt Courier", color: "#ffb000", strokeThickness: 1*this.ratio, stroke: "#000000" }
+        const style: Phaser.Types.GameObjects.Text.TextStyle = {  color: "#ffb000", strokeThickness: 1*this.ratio, stroke: "#000000",fontSize: (height/20).toString() + 'px' }
         this.lifeImg = this.add.image(20*this.ratio, 20*this.ratio, 'life').setScrollFactor(0).setScale(0.3*this.ratio);
         this.lifeText = this.add.text(35*this.ratio, 12*this.ratio, "x" + this.registry.get('nbrLife').toString(), style).setScrollFactor(0);
 
@@ -154,8 +154,8 @@ export default class LevelOne extends Phaser.Scene {
         if (data.firstTime) {
             this.registry.set('nbrLife', 3);
             this.dialogNumber = 0;
-            this.player.x = width*0.1;
-            this.player.y = height*2-LevelOne.tileSize*4;
+            this.player.x = LevelOne.tileSize;
+            this.player.y = this.map.heightInPixels-LevelOne.tileSize*4;
             this.player.disableControls = true;
             this.player.walk('right');
             this.time.addEvent({
@@ -179,6 +179,7 @@ export default class LevelOne extends Phaser.Scene {
         this.cameras.main.setBounds(LevelOne.tileSize, 0, this.map.widthInPixels - LevelOne.tileSize, this.map.heightInPixels);
         // make the camera follow the player
         this.cameras.main.startFollow(this.player);
+        this.cameras.main.zoomTo(this.ratio);
         this.cameras.main.fadeIn(2000);
 
         // set background color, so the sky is not black    
