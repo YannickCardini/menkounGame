@@ -43,8 +43,7 @@ export class Player extends Physics.Arcade.Sprite {
         this.config = config;
         this.stopAnimation = false;
         this.downKey = config.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
-        if (!this.config.scene.sys.game.device.os.desktop)
-            this.createControlsMobile();
+
     }
 
     animation(): void {
@@ -99,16 +98,16 @@ export class Player extends Physics.Arcade.Sprite {
 
         // let fullScreenButton = this.config.scene.add.image(worldX + 580, worldY + 30, 'fullScreen_button').setScrollFactor(0).setInteractive();
 
-        this.jumpButton.on('pointerdown', () => {
+        this.scene.events.on('jumpPressed', () => {
             this.jump();
         });
-        this.leftButton.on('pointerdown', () => {
+        this.scene.events.on('leftPressed', () => {
             this.run();
         });
-        this.rightButton.on('pointerdown', () => {
+        this.scene.events.on('rightPressed', () => {
             this.run('right');
         });
-        this.slideButton.on('pointerdown', () => {
+        this.scene.events.on('slidePressed', () => {
             this.slide();
             this.pointerUp();
         });
@@ -174,16 +173,6 @@ export class Player extends Physics.Arcade.Sprite {
             frameRate: 9,
         })
 
-    }
-
-    createControlsMobile() {
-        let worldX = this.config.scene.cameras.main.worldView.x;
-        let worldY = this.config.scene.cameras.main.worldView.y;
-
-        this.jumpButton = this.config.scene.add.image(worldX + 513, worldY + 238, 'jump_button').setScrollFactor(0).setInteractive().setScale(0.25);
-        this.slideButton = this.config.scene.add.image(this.jumpButton.x + 50, this.jumpButton.y + 45, 'slide_button').setScrollFactor(0).setInteractive().setScale(0.25);
-        this.leftButton = this.config.scene.add.image(worldX + 50, this.slideButton.y, 'left_button').setScrollFactor(0).setInteractive().setScale(0.25);
-        this.rightButton = this.config.scene.add.image(this.leftButton.x + 70, this.leftButton.y, 'right_button').setScrollFactor(0).setInteractive().setScale(0.25);
     }
 
     delayDone(): void {
@@ -266,8 +255,6 @@ export class Player extends Physics.Arcade.Sprite {
                 else
                     this.controlsMobile();
             }
-
-
         }
     }
 
