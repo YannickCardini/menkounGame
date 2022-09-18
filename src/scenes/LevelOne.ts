@@ -34,7 +34,16 @@ export default class LevelOne extends Phaser.Scene {
         super('LevelOne');
     }
 
+    init(data: { firstTime: boolean }){
+        let { width, height } = this.sys.game.canvas;
+        this.ratio = width / 620;
+
+        if (data.firstTime)
+            this.displayLoadingBar(width, height);
+    }
+
     preload() {
+
         // map made with Tiled in JSON format
         this.load.tilemapTiledJSON('map', '/assets/tiled/level1.json')
         // tiles in spritesheet 
@@ -56,7 +65,7 @@ export default class LevelOne extends Phaser.Scene {
         // bird animations
         this.load.atlas('bird', 'assets/bird.png', 'assets/bird.json');
         // pause game
-        this.load.image("pause", "assets/pause_button.png")
+        this.load.image("pause", "assets/pause_button.png");
 
         if (!this.sys.game.device.os.desktop) {
             // load button mobile
@@ -70,7 +79,6 @@ export default class LevelOne extends Phaser.Scene {
     create(data: { firstTime: boolean }) {
 
         let { width } = this.sys.game.canvas;
-        this.ratio = width / 620;
 
         //resize game if screen orientation or other
         // window.addEventListener('resize', this.resize);
@@ -174,7 +182,7 @@ export default class LevelOne extends Phaser.Scene {
         this.cameras.main.ignore(this.ui);
 
         this.cameras.main.setBounds(LevelOne.tileSize, 0, this.map.widthInPixels - LevelOne.tileSize, this.map.heightInPixels);
-        console.log(this.children.list[0].constructor.name))
+
         UICam.ignore(this.children.list.filter((child: Phaser.GameObjects.GameObject) => !(child instanceof UI)));
 
         // make the camera follow the player
@@ -206,6 +214,66 @@ export default class LevelOne extends Phaser.Scene {
             if (this.player.x > LevelOne.tileSize * 95 && (this.player.body as Phaser.Physics.Arcade.Body).onFloor() && this.dialogNumber < 4)
                 this.startDialogScene();
         }
+    }
+
+    displayLoadingBar(width: number, height): void {
+        var progressBar = this.add.graphics();
+        var progressBox = this.add.graphics();
+        var progressBarWidth = 320 * this.ratio;
+        var progressBarHeight = 50 * this.ratio;
+        progressBox.fillStyle(0x222222, 0.8);
+        progressBox.fillRect(width * 0.5 - progressBarWidth / 2, height * 0.5 - progressBarHeight / 2, progressBarWidth, progressBarHeight);
+
+        var loadingText = this.make.text({
+            x: width / 2,
+            y: height / 2 - 50 * this.ratio,
+            text: 'Chargement...',
+            style: {
+                // font: '20px monospace',
+                color: '#ffffff',
+                fontSize: (12 * this.ratio).toString() + 'px'
+            }
+        });
+        loadingText.setOrigin(0.5, 0.5);
+
+        var percentText = this.make.text({
+            x: width / 2,
+            y: height / 2 - 5 * this.ratio,
+            text: '0%',
+            style: {
+                fontSize: (10 * this.ratio).toString() + 'px',
+                color: '#ffffff'
+            }
+        });
+        percentText.setOrigin(0.5, 0.5);
+
+        var assetText = this.make.text({
+            x: width / 2,
+            y: height / 2 + 50 * this.ratio,
+            text: '',
+            style: {
+                fontSize: (10 * this.ratio).toString() + 'px',
+                color: '#ffffff'
+            }
+        });
+        assetText.setOrigin(0.5, 0.5);
+
+        this.load.on('progress', (value) => {
+            percentText.setText((value * 100).toString() + '%');
+            progressBar.clear();
+            progressBar.fillStyle(0xffffff, 1);
+            progressBar.fillRect((width * 0.5 - progressBarWidth / 2) + 10 * this.ratio, (height * 0.5 - progressBarHeight / 2) + 10 * this.ratio, (progressBarWidth - 20 * this.ratio) * value, progressBarHeight - 20 * this.ratio);
+        });
+        this.load.on('fileprogress', function (file) {
+            assetText.setText('Chargement du fichier: ' + file.src);
+        });
+        this.load.on('complete', function () {
+            progressBar.destroy();
+            progressBox.destroy();
+            loadingText.destroy();
+            percentText.destroy();
+            assetText.destroy();
+        });
     }
 
     playerCollide(): void {
@@ -241,7 +309,15 @@ export default class LevelOne extends Phaser.Scene {
     }
 
     playerDie(): void {
-        this.cameras.main.fadeOut(2000);
+        this.cameras.main.fadeOut(3000);
+
+        // const playerCam = this.cameras.add();
+        // playerCam.setBounds(LevelOne.tileSize, 0, this.map.widthInPixels - LevelOne.tileSize, this.map.heightInPixels);
+        // playerCam.startFollow(this.player);
+        // playerCam.zoomTo(this.ratio,0)
+        // //  The main camera will not render the UI Text objects
+        // this.cameras.main.ignore(this.player);
+        // playerCam.ignore(this.children.list.filter((child: Phaser.GameObjects.GameObject) => !(child instanceof Player)));
         this.registry.events.off('changedata');
         this.player.die();
         this.beasts.forEach(beasts => {
@@ -255,6 +331,7 @@ export default class LevelOne extends Phaser.Scene {
             this.events.removeListener('slidePressed');
             this.events.removeListener('leftPressed');
             this.events.removeListener('rightPressed');
+            this.load.removeAllListeners();
 
             if (nbrLife < 0)
                 this.scene.start('menu');
