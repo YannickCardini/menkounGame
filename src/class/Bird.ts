@@ -29,7 +29,7 @@ export class Bird extends Bestiaire {
     animations() {
         switch (this.state) {
             case 'dying':
-                this.anims.play("bird_dying",true);
+                this.anims.play("bird_dying", true);
             default:
                 this.anims.play("fly", true);
                 break;
@@ -53,8 +53,8 @@ export class Bird extends Bestiaire {
     update(...args: any[]): void {
         if (this.state !== "dead") {
             this.animations();
-            this.beastMovements(140);
-            if(this.body.x < -200)
+            this.beastMovements(1.8);
+            if (this.body.x < -200)
                 this.die('slide');
         }
     }

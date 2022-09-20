@@ -140,7 +140,6 @@ export default class LevelOne extends Phaser.Scene {
 
             ];
         let boars = [new Boar({ scene: this, x: LevelOne.tileSize * 25, y: LevelOne.tileSize * 16, movingRangeX1: LevelOne.tileSize * 25, movingRangeX2: LevelOne.tileSize * 43, ground: this.groundLayer })];
-
         this.beasts = [boars, mushrooms, birds];
         // create the player sprite    
         this.player = new Player({ scene: this, x: LevelOne.tileSize * 4, y: this.map.heightInPixels - LevelOne.tileSize * 8 });

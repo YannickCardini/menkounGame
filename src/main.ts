@@ -6,8 +6,8 @@ import LevelOne from './scenes/LevelOne';
 import PauseScene from './scenes/PauseScene';
 import DialogScene from './scenes/DialogScene';
 
-const WIDTH = 1240;
-const HEIGHT = 640;
+const WIDTH = 620;
+const HEIGHT = 320;
 
 console.log('version 1')
 
