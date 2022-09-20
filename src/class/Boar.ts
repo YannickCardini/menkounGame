@@ -4,7 +4,7 @@ import { Bestiaire, BestiaireConfig } from "./Bestiaire";
 export class Boar extends Bestiaire {
 
     scene: Scene;
-    static VELOCITY = 170;
+    static VELOCITY = 3;
     freeze = false;
 
     constructor(config: BestiaireConfig) {
@@ -22,9 +22,9 @@ export class Boar extends Bestiaire {
 
         this.scene = config.scene;
 
-        let scale = Phaser.Math.Between(3, 5);
+        // let scale = Phaser.Math.Between(3, 5);
 
-        this.setScale(scale*0.1);
+        this.setScale(4*0.1);
 
         this.createAnims(config.scene);
 
@@ -61,11 +61,11 @@ export class Boar extends Bestiaire {
             this.repos();
 
         if (this.state === "charging_right") {
-            this.setVelocityX(Boar.VELOCITY)
+            this.x += Boar.VELOCITY
             this.flipX = false;
         }
         else if (this.state === "charging_left") {
-            this.setVelocityX(-Boar.VELOCITY)
+            this.x += -Boar.VELOCITY
             this.flipX = true;
         }
     }
@@ -99,7 +99,6 @@ export class Boar extends Bestiaire {
 
     die(anim: string): void {
         this.state = "dying";
-        this.setVelocityX(0);
 
         if (anim === 'slide') {
             this.on('animationcomplete', () => this.freeze = true);
@@ -115,6 +114,7 @@ export class Boar extends Bestiaire {
                 this.state = "dead";
                 this.setVisible(false);
                 let sprite = this.config.scene.add.sprite(this.x, this.y, "disappear");
+                this.scene.cameras.getCamera('UICam').ignore(sprite);
                 sprite.anims.play("boom", true);
                 sprite.on("animationcomplete", () => {
                     sprite.destroy();
@@ -125,7 +125,6 @@ export class Boar extends Bestiaire {
     }
 
     repos(): void {
-        this.setVelocityX(0);
         this.state = "idle";
         let delay = Phaser.Math.Between(3000, 6000);
         this.config.scene.time.addEvent({ delay: delay, callback: this.chargeAgain, callbackScope: this, loop: false })

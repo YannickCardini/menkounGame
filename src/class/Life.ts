@@ -13,47 +13,42 @@ export class Life extends Phaser.GameObjects.Image {
     constructor(scene: Scene, x: number, y: number) {
         super(scene, x, y, 'life');
         scene.add.existing(this);
+        let { ratio } = this.scene.registry.get('canvas');
         this.setScale(0.4)
         this.scene = scene;
-        var postFxPlugin = scene.plugins.get('rexGlowFilterPipeline');
-        (postFxPlugin as GlowFilterPipelinePlugin)
-            .add(this, {
-                distance: 15,
-                glowColor: 0xF8D56B,
-            });
+        // var postFxPlugin = scene.plugins.get('rexGlowFilterPipeline');
+        // (postFxPlugin as GlowFilterPipelinePlugin)
+        //     .add(this, {
+        //         distance: 15,
+        //         glowColor: 0xF8D56B,
+        //         quality: 0.1,
+        //     });
+
+        // TweenHelper.floatEffect(scene, this);
         this.y1 = y - 4;
         this.y2 = y + 4;
     }
 
     disappearEffect(): void {
 
+        let { width, height, ratio } = this.scene.registry.get('canvas');
         let nbrLife = this.scene.registry.get('nbrLife');
         this.scene.registry.set('nbrLife', nbrLife + 1);
-        this.setScrollFactor(0);
-        this.setX(this.x - this.scene.cameras.main.worldView.x);
-        this.setY(this.y - this.scene.cameras.main.worldView.y);
-        TweenHelper.getLifeEffect(this.scene,this);
+        // this.setScrollFactor(0);
+        console.log('life position: ',this.x,this.y)
+        // this.setX(this.x + this.scene.cameras.main.worldView.x);
+        // this.setY(this.y + this.scene.cameras.main.worldView.y);
+        // this.setPosition(width*0.5,height*0.5)
+        // this.setPosition(381,187)
+        console.log('this.scene.camera.maine.worldView',this.scene.cameras.main.worldView.x,this.scene.cameras.main.worldView.y)
+        console.log('equation:',this.x - this.scene.cameras.main.worldView.x/ratio,this.y/ratio - this.scene.cameras.main.worldView.x/ratio)
+        console.log('life position after set scroll(0):',this.x,this.y)
+        TweenHelper.stopTweens();
+        TweenHelper.getLifeEffect(this.scene, this);
 
         // this.scene.tweens.add({targets: this, scale: 0.7, duration: 200, ease: 'Linear',  onComplete: ()=>{
         //     this.scene.tweens.add({ targets: this, x: 20, y: 20, scale: 0.3, duration: 500, ease: 'Linear', onComplete: () => { this.destroy() } });
         // }})
-
-
-        // this.setVisible(false);
-
-        // let sprite = this.scene.add.sprite(this.x, this.y, "disappear")
-
-        // this.scene.anims.create({
-        //     key: "boom",
-        //     frames: this.scene.anims.generateFrameNames('disappear', { prefix: 'c1_boom', start: 1, end: 3, zeroPad: 2 }),
-        //     frameRate: 7,
-        // });
-
-        // sprite.anims.play("boom", true);
-        // sprite.on("animationcomplete", () => {
-        //     sprite.destroy();
-        //     this.destroy();
-        // })
 
     }
 

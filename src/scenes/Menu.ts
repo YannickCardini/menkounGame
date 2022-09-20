@@ -24,6 +24,7 @@ export default class Menu extends Phaser.Scene {
     create() {
 
         let { width, height } = this.sys.game.canvas;
+        this.registry.set('canvas', {width: width, height: height, ratio: width/620});
 
         this.fontSize = height/10;
         this.buttons = [];

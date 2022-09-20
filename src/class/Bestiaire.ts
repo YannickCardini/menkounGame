@@ -48,7 +48,7 @@ export class Bestiaire extends Physics.Arcade.Sprite {
 
     }
 
-    beastMovements(speed = 50): void {
+    beastMovements(speed = .8): void {
         let x1 = this.config.movingRangeX1;
         let x2 = this.config.movingRangeX2;
         let moveSpeed = speed;
@@ -59,11 +59,11 @@ export class Bestiaire extends Physics.Arcade.Sprite {
             this.state = "moving_right";
 
         if (this.state === "moving_right") {
-            this.setVelocityX(moveSpeed)
+            this.x += (moveSpeed)
             this.flipX = false;
         }
         else if (this.state === "moving_left") {
-            this.setVelocityX(-moveSpeed)
+            this.x += (-moveSpeed)
             this.flipX = true;
         }
     }
@@ -80,7 +80,6 @@ export class Bestiaire extends Physics.Arcade.Sprite {
 
     die(anim: string): void {
         this.state = "dying";
-        this.setVelocityX(0);
 
         if (anim === 'slide') {
             (this.body as Phaser.Physics.Arcade.Body).allowGravity = true;
@@ -94,7 +93,7 @@ export class Bestiaire extends Physics.Arcade.Sprite {
             this.state = "dead";
             this.setVisible(false);
             let sprite = this.config.scene.add.sprite(this.x, this.y, "disappear");
-
+            this.scene.cameras.getCamera('UICam').ignore(sprite);
             sprite.anims.play("boom", true);
             sprite.on("animationcomplete", () => {
                 sprite.destroy();
@@ -105,7 +104,6 @@ export class Bestiaire extends Physics.Arcade.Sprite {
 
     playerDie(): void {
         if (this.active) {
-            this.setVelocity(0, 0);
             this.anims.stop();
         }
     }

@@ -13,8 +13,7 @@ export class UI extends Phaser.GameObjects.Container {
 
     constructor(scene: Scene) {
         super(scene);
-        let { width, height } = scene.sys.game.canvas;
-        let ratio = width / 620;
+        let { width, height, ratio } = scene.registry.get('canvas');
         this.scene = scene;
         // Add life counter at the top left corner     
         const style: Phaser.Types.GameObjects.Text.TextStyle = { color: "#ffb000", strokeThickness: 1 * ratio, stroke: "#000000", fontSize: (height / 20).toString() + 'px' }
@@ -63,10 +62,6 @@ export class UI extends Phaser.GameObjects.Container {
         this.scene.add.existing(this);
 
         scene.registry.events.on('changedata', this.registryEvents, this);
-    }
-
-    getChildren(): Array<Phaser.GameObjects.GameObject> {
-        return [this.lifeImg, this.lifeText];
     }
 
     lifeBlink(): void {

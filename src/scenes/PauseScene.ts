@@ -7,12 +7,11 @@ export default class PauseScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image("play", "assets/play_button.png")
+        this.load.image("play", "assets/ui/play_button.png")
     }
 
     create(){
-        let { width, height } = this.sys.game.canvas;
-        let ratio = width / 620;
+        let { width, height, ratio } = this.registry.get('canvas');
         this.pauseButton = this.add.image(width*0.94, height*0.1, 'play').setScrollFactor(0).setScale(0.15*ratio);
 
         this.pauseButton.setInteractive().on('pointerup', () => {

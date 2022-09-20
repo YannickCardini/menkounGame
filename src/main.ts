@@ -6,8 +6,8 @@ import LevelOne from './scenes/LevelOne';
 import PauseScene from './scenes/PauseScene';
 import DialogScene from './scenes/DialogScene';
 
-const WIDTH = 930;
-const HEIGHT = 480;
+const WIDTH = 1240;
+const HEIGHT = 640;
 
 console.log('version 1')
 
@@ -29,6 +29,9 @@ const config: Phaser.Types.Core.GameConfig = {
 		autoCenter: Phaser.Scale.CENTER_HORIZONTALLY,
 		//Max height and width
 		// max:widthHeight,
+	},
+	fps:{
+		smoothStep: true,
 	},
     plugins: {
         global: [{

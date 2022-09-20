@@ -7,7 +7,6 @@ import { Life } from '~/class/Life';
 import { Mushroom } from '~/class/Mushroom';
 import { Player } from '~/class/Player';
 import { PNJ } from '~/class/PNJ';
-import { TweenHelper } from '~/class/TweenHelper';
 import { UI } from '~/class/UI';
 
 export default class LevelOne extends Phaser.Scene {
@@ -34,9 +33,9 @@ export default class LevelOne extends Phaser.Scene {
         super('LevelOne');
     }
 
-    init(data: { firstTime: boolean }){
-        let { width, height } = this.sys.game.canvas;
-        this.ratio = width / 620;
+    init(data: { firstTime: boolean }) {
+        let { width, height, ratio } = this.registry.get('canvas');
+        this.ratio = ratio;
 
         if (data.firstTime)
             this.displayLoadingBar(width, height);
@@ -50,35 +49,36 @@ export default class LevelOne extends Phaser.Scene {
         this.load.image('TX Tileset Ground', 'assets/tiled/TX Tileset Ground.png');
         //Background Layers
         for (let i = LevelOne.backgroundLayersStart; i < 12; i++)
-            this.load.image('background-' + i, "assets/background/background-" + i + ".png");
+            this.load.image('background-' + i, "assets/background/level1/background-" + i + ".png");
         // life info
         this.load.image("life", "assets/life.png")
         // player animations
         this.load.atlas('cat', 'assets/player.png', 'assets/player.json');
         this.load.atlas('pnj', 'assets/pnj.png', 'assets/pnj.json');
-        // mushroom animations
-        this.load.atlas('mushroom', 'assets/mushroom.png', 'assets/mushroom.json');
         // disappear animations
-        this.load.atlas('disappear', 'assets/disappear.png', 'assets/disappear.json')
+        this.load.atlas('disappear', 'assets/disappear.png', 'assets/disappear.json');
+        // mushroom animations
+        this.load.atlas('mushroom', 'assets/bestiaire/mushroom.png', 'assets/bestiaire/mushroom.json');
         // boar animations
-        this.load.atlas('boar', 'assets/boar.png', 'assets/boar.json');
+        this.load.atlas('boar', 'assets/bestiaire/boar.png', 'assets/bestiaire/boar.json');
         // bird animations
-        this.load.atlas('bird', 'assets/bird.png', 'assets/bird.json');
+        this.load.atlas('bird', 'assets/bestiaire/bird.png', 'assets/bestiaire/bird.json');
         // pause game
-        this.load.image("pause", "assets/pause_button.png");
+        this.load.image("pause", "assets/ui/pause_button.png");
 
         if (!this.sys.game.device.os.desktop) {
             // load button mobile
-            this.load.image('slide_button', 'assets/slide_button.png');
-            this.load.image('jump_button', 'assets/jump_button.png');
-            this.load.image('left_button', 'assets/left_button.png');
-            this.load.image('right_button', 'assets/right_button.png')
+            this.load.image('slide_button', 'assets/ui/slide_button.png');
+            this.load.image('jump_button', 'assets/ui/jump_button.png');
+            this.load.image('left_button', 'assets/ui/left_button.png');
+            this.load.image('right_button', 'assets/ui/right_button.png')
         }
+
     }
 
     create(data: { firstTime: boolean }) {
 
-        let { width } = this.sys.game.canvas;
+        let { width, height } = this.sys.game.canvas;
 
         //resize game if screen orientation or other
         // window.addEventListener('resize', this.resize);
@@ -148,7 +148,7 @@ export default class LevelOne extends Phaser.Scene {
         this.png = new PNJ({ scene: this, x: LevelOne.tileSize * 98, y: LevelOne.tileSize * 13 });
         this.png.flipX = true;
 
-        this.lifes = [new Life(this, LevelOne.tileSize * 29.5, LevelOne.tileSize * 1.5), new Life(this, 100, 1100)];
+        this.lifes = [new Life(this, LevelOne.tileSize * 29.5, LevelOne.tileSize * 1.7),new Life(this, LevelOne.tileSize * 6, LevelOne.tileSize * 15)];
 
         //  when first time scene called
         if (data.firstTime) {
@@ -176,7 +176,7 @@ export default class LevelOne extends Phaser.Scene {
         config.scene.physics.add.collider(this.groundLayer, this.png);
 
         //  Add in a new camera, the same size and position as the main camera
-        const UICam = this.cameras.add();
+        const UICam = this.cameras.add(0, 0, width, height, false, 'UICam');
 
         //  The main camera will not render the UI Text objects
         this.cameras.main.ignore(this.ui);
@@ -197,16 +197,19 @@ export default class LevelOne extends Phaser.Scene {
 
     update(): void {
         // console.log(this.player.x, this.player.y)
-        console.log(this.input.x, this.input.y)
+        // console.log(this.input.x, this.input.y)
 
         this.player.update();
 
         if (this.player.state !== "dying") {
             this.png.update();
-            this.lifes.forEach(life => { life.update(this.player); });
+            this.lifes.forEach(life => {
+                life.update(this.player);
+            });
             this.beasts.forEach(beasts => {
-                for (let beast of beasts)
-                    beast.update()
+                for (let beast of beasts) {
+                    beast.update();
+                }
             });
             this.playerCollide();
             if (this.player.y > LevelOne.tileSize * 20 + this.player.height)
