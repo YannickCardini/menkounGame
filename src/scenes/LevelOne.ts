@@ -311,8 +311,11 @@ export default class LevelOne extends Phaser.Scene {
     }
 
     playerDie(): void {
-        this.cameras.main.fadeOut(3000);
+         this.cameras.main.fadeOut(1500);
+         this.cameras.main.ignore(this.player);
 
+                this.scene.launch("DeathScene",{x:this.player.x-this.cameras.main.worldView.x,y:this.player.y-this.cameras.main.worldView.y});
+ 
         // const playerCam = this.cameras.add();
         // playerCam.setBounds(LevelOne.tileSize, 0, this.map.widthInPixels - LevelOne.tileSize, this.map.heightInPixels);
         // playerCam.startFollow(this.player);

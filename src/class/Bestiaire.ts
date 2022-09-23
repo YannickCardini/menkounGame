@@ -48,7 +48,7 @@ export class Bestiaire extends Physics.Arcade.Sprite {
 
     }
 
-    beastMovements(speed = .8): void {
+    beastMovements(speed = 50): void {
         let x1 = this.config.movingRangeX1;
         let x2 = this.config.movingRangeX2;
         let moveSpeed = speed;
@@ -59,11 +59,11 @@ export class Bestiaire extends Physics.Arcade.Sprite {
             this.state = "moving_right";
 
         if (this.state === "moving_right") {
-            this.x += (moveSpeed)
+            this.setVelocityX(moveSpeed)
             this.flipX = false;
         }
         else if (this.state === "moving_left") {
-            this.x += (-moveSpeed)
+            this.setVelocityX(-moveSpeed)
             this.flipX = true;
         }
     }
@@ -104,6 +104,7 @@ export class Bestiaire extends Physics.Arcade.Sprite {
 
     playerDie(): void {
         if (this.active) {
+            this.setVelocityX(0);
             this.anims.stop();
         }
     }

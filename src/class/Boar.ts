@@ -1,10 +1,10 @@
-import { Physics, Scene, Tilemaps } from "phaser";
+import { Scene } from "phaser";
 import { Bestiaire, BestiaireConfig } from "./Bestiaire";
 
 export class Boar extends Bestiaire {
 
     scene: Scene;
-    static VELOCITY = 3;
+    static VELOCITY = 140;
     freeze = false;
 
     constructor(config: BestiaireConfig) {
@@ -61,11 +61,11 @@ export class Boar extends Bestiaire {
             this.repos();
 
         if (this.state === "charging_right") {
-            this.x += Boar.VELOCITY
+            this.setVelocityX(Boar.VELOCITY)
             this.flipX = false;
         }
         else if (this.state === "charging_left") {
-            this.x += -Boar.VELOCITY
+            this.setVelocityX(-Boar.VELOCITY)
             this.flipX = true;
         }
     }

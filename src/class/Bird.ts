@@ -53,7 +53,7 @@ export class Bird extends Bestiaire {
     update(...args: any[]): void {
         if (this.state !== "dead") {
             this.animations();
-            this.beastMovements(1.8);
+            this.beastMovements(80);
             if (this.body.x < -200)
                 this.die('slide');
         }

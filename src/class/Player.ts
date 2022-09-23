@@ -77,9 +77,9 @@ export class Player extends Physics.Arcade.Sprite {
     controlsDesktop(): void {
         if (this.state === "sliding") {
             if (this.flipX)
-                this.setVelocityX(-Player.VELOCITY)
+                this.setVelocityX(-Player.VELOCITY*1.7)
             else
-                this.setVelocityX(Player.VELOCITY)
+                this.setVelocityX(Player.VELOCITY*1.7)
         }
         else if ((this.cursors.space.isDown || this.cursors.up.isDown))
             this.jump();
@@ -232,7 +232,7 @@ export class Player extends Physics.Arcade.Sprite {
     slide(): void {
         if ((this.body as Phaser.Physics.Arcade.Body).onFloor()) {
             this.state = "sliding";
-            this.config.scene.time.addEvent({ delay: 400, callback: this.stopSliding, callbackScope: this, loop: false })
+            this.config.scene.time.addEvent({ delay: 200, callback: this.stopSliding, callbackScope: this, loop: false })
         }
     }
 
