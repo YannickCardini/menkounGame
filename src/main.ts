@@ -7,8 +7,8 @@ import PauseScene from './scenes/PauseScene';
 import DialogScene from './scenes/DialogScene';
 import DeathScene from './scenes/DeathScene';
 
-const WIDTH = 620;
-const HEIGHT = 320;
+const WIDTH = 1240;
+const HEIGHT = 640;
 
 console.log('version 1')
 

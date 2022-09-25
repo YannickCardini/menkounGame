@@ -12,12 +12,15 @@ export default class DialogScene extends Phaser.Scene {
   }
 
   create(data: {x:number, y:number}) {
+    let { ratio } = this.registry.get('canvas');
     //   this.cameras.main.setBackgroundColor("#000000");
+    // this.cameras.main.zoomTo(ratio, 1, 'Linear', true);
+
     let player = this.add.sprite(
-      data.x,
-      data.y,
+      data.x*ratio,
+      data.y*ratio,
       "cat"
-    ).setScale(0.5);
+    ).setScale(0.5*ratio);
 
     this.anims.create({
       key: "dead",
