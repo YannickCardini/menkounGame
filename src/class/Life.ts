@@ -1,5 +1,5 @@
 import { Physics, Scene } from "phaser";
-import GlowFilterPipelinePlugin from "phaser3-rex-plugins/plugins/glowfilter2pipeline-plugin.js";
+import SceneEnums from "~/enums/SceneEnums";
 import { TweenHelper } from "./TweenHelper";
 
 export class Life extends Phaser.GameObjects.Image {
@@ -11,22 +11,23 @@ export class Life extends Phaser.GameObjects.Image {
     scene.add.existing(this);
     this.setScale(0.4);
     this.scene = scene;
-    // var postFxPlugin = scene.plugins.get('rexGlowFilterPipeline');
-    // (postFxPlugin as GlowFilterPipelinePlugin)
-    //     .add(this, {
-    //         distance: 15,
-    //         glowColor: 0xF8D56B,
-    //         quality: 0.1,
-    //     });
-
     TweenHelper.floatEffect(scene, this);
   }
 
   disappearEffect(): void {
+    let {ratio} = this.scene.registry.get('canvas');
     let nbrLife = this.scene.registry.get("nbrLife");
     this.scene.registry.set("nbrLife", nbrLife + 1);
     TweenHelper.stopTweens();
-    TweenHelper.getLifeEffect(this.scene, this);
+    const particleEffects = this.scene.scene.get(SceneEnums.particle)
+    particleEffects.events.emit('trail-to', {
+      x: this.x,
+      y: this.y,
+      toX: 25 * ratio,
+      toY: 25 * ratio
+    });
+    this.destroy();
+    // TweenHelper.getLifeEffect(this.scene, this);
   }
 
   update(player: Physics.Arcade.Sprite): void {

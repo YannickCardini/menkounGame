@@ -72,7 +72,7 @@ export class Boar extends Bestiaire {
 
     chargeAgain(): void {
         if (this.state !== "dead" && this.state !== "dying")
-            this.state = !this.flipX ? "charging_left" : "charging_right";
+            this.state = this.flipX ? "charging_right":"charging_left";
     }
 
     createAnims(scene: Scene) {
@@ -126,6 +126,7 @@ export class Boar extends Bestiaire {
 
     repos(): void {
         this.state = "idle";
+        this.setVelocityX(0);
         let delay = Phaser.Math.Between(3000, 6000);
         this.config.scene.time.addEvent({ delay: delay, callback: this.chargeAgain, callbackScope: this, loop: false })
     }

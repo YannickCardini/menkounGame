@@ -3,7 +3,7 @@ import { Scene } from "phaser";
 export class TweenHelper {
 
     static flash: Phaser.Tweens.Timeline;
-    static getLife: Phaser.Tweens.Tween;
+    // static getLife: Phaser.Tweens.Tween;
     static float: Phaser.Tweens.Tween;
 
 
@@ -58,23 +58,23 @@ export class TweenHelper {
         });
     }
 
-    static getLifeEffect(scene: Scene, target: Phaser.GameObjects.Image | Phaser.GameObjects.Text): void {
-        let {ratio} = scene.registry.get('canvas');
-        this.getLife = scene.tweens.add(
-            {
-                targets: target, scale: 0.7, duration: 200, ease: 'Linear', onComplete: () => {
-                    scene.tweens.add({
-                        targets: target, x: 20*ratio + scene.cameras.main.worldView.x, y: 20*ratio + scene.cameras.main.worldView.y, scale: 0.3, duration: 500, ease: 'Linear', onComplete: () => {
-                            target.destroy()
-                        }
-                    });
-                }
-            });
-    }
+    // static getLifeEffect(scene: Scene, target: Phaser.GameObjects.Image | Phaser.GameObjects.Text): void {
+    //     let {ratio} = scene.registry.get('canvas');
+    //     this.getLife = scene.tweens.add(
+    //         {
+    //             targets: target, scale: 0.7, duration: 200, ease: 'Linear', onComplete: () => {
+    //                 scene.tweens.add({
+    //                     targets: target, x: 21*ratio + scene.cameras.main.worldView.x, y: 21*ratio + scene.cameras.main.worldView.y, scale: 0.3, duration: 500, ease: 'Linear', onComplete: () => {
+    //                         target.destroy()
+    //                     }
+    //                 });
+    //             }
+    //         });
+    // }
 
     static stopTweens(): void {
-        if (this.getLife)
-            this.getLife.stop();
+        // if (this.getLife)
+        //     this.getLife.stop();
         if (this.float)
             this.float.stop();
         if (this.flash)

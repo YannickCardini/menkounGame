@@ -1,3 +1,5 @@
+import SceneEnums from "~/enums/SceneEnums";
+
 export default class Menu extends Phaser.Scene {
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
     private buttons: Phaser.GameObjects.Image[] = []
@@ -7,7 +9,7 @@ export default class Menu extends Phaser.Scene {
     player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
 
     constructor() {
-        super('menu')
+        super(SceneEnums.menu)
     }
 
     preload() {

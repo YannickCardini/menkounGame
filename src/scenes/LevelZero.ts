@@ -6,6 +6,7 @@ import { Life } from '~/class/Life';
 import { Mushroom } from '~/class/Mushroom';
 import { Player } from '~/class/Player';
 import { TweenHelper } from '~/class/TweenHelper';
+import SceneEnums from '~/enums/SceneEnums';
 
 export default class LevelZero extends Phaser.Scene {
 
@@ -23,7 +24,7 @@ export default class LevelZero extends Phaser.Scene {
 
 
     constructor() {
-        super('LevelZero');
+        super(SceneEnums.levelZero);
     }
 
     preload() {

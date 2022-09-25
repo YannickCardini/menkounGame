@@ -1,10 +1,11 @@
 import { Physics } from "phaser";
+import SceneEnums from "~/enums/SceneEnums";
 
 export default class DialogScene extends Phaser.Scene {
   counter: number;
 
   constructor() {
-    super("DeathScene");
+    super(SceneEnums.death);
   }
 
   preload() {
@@ -33,7 +34,7 @@ export default class DialogScene extends Phaser.Scene {
       frameRate: 1,
     });
     player.anims.play("dead", true).once('animationcomplete', ()=>{
-        this.scene.resume('LevelOne');
+        this.scene.resume(SceneEnums.levelOne);
         this.scene.stop();
     });
   }

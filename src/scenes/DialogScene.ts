@@ -1,11 +1,12 @@
 import { Dialog, textAndImg } from "~/class/Dialog";
+import SceneEnums from "~/enums/SceneEnums";
 
 export default class DialogScene extends Phaser.Scene {
 
     counter: number;
 
     constructor() {
-        super('DialogScene');
+        super(SceneEnums.dialog);
     }
 
     preload() {
@@ -24,7 +25,7 @@ export default class DialogScene extends Phaser.Scene {
             if (dialog.animateFinish()) {
                 this.counter++;
                 if (this.counter >= tai.length) {
-                    this.scene.resume('LevelOne');
+                    this.scene.resume(SceneEnums.levelOne);
                     this.scene.stop();
                 }
                 else
