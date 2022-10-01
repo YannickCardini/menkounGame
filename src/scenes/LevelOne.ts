@@ -486,16 +486,16 @@ export default class LevelOne extends Phaser.Scene {
     switch (this.dialogNumber) {
       case 1:
         // @ts-ignore
-        this.cameras.main.fadeEffect.alpha = 0.8;
-        this.scene.pause();
-        textsAndImg = [
-          { text: "Je hais cette forêt !!!", img: "player_sad" },
-          {
-            text: "Et particulièrement tous ces horribles animaux ! Il faut que je me dépêche de rejoindre Caporal Coon... ",
-            img: "player_sad",
-          },
-        ];
-        this.scene.launch(SceneEnums.dialog, { textsAndImg: textsAndImg });
+        // this.cameras.main.fadeEffect.alpha = 0.8;
+        // this.scene.pause();
+        // textsAndImg = [
+        //   { text: "Je hais cette forêt !!!", img: "player_sad" },
+        //   {
+        //     text: "Et particulièrement tous ces horribles animaux ! Il faut que je me dépêche de rejoindre Caporal Coon... ",
+        //     img: "player_sad",
+        //   },
+        // ];
+        // this.scene.launch(SceneEnums.dialog, { textsAndImg: textsAndImg });
         break;
 
       case 2:

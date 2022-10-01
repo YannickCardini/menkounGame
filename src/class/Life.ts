@@ -21,8 +21,8 @@ export class Life extends Phaser.GameObjects.Image {
     TweenHelper.stopTweens();
     const particleEffects = this.scene.scene.get(SceneEnums.particle)
     particleEffects.events.emit('trail-to', {
-      x: this.x,
-      y: this.y,
+      fromX: this.x * ratio - this.scene.cameras.main.worldView.x * ratio,
+      fromY: this.y * ratio - this.scene.cameras.main.worldView.y * ratio,
       toX: 25 * ratio,
       toY: 25 * ratio
     });
