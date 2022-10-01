@@ -47,7 +47,7 @@ export class Mushroom extends Bestiaire {
         scene.anims.create({
             key: "mushroom_crush",
             frames: scene.anims.generateFrameNames('mushroom', { prefix: 'm1_crush', start: 1, end: 4, zeroPad: 2 }),
-            frameRate: 15,
+            frameRate: 8,
             repeat: -1
         });
     }

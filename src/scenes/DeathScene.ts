@@ -12,7 +12,7 @@ export default class DialogScene extends Phaser.Scene {
     this.load.atlas("cat", "assets/player.png", "assets/player.json");
   }
 
-  create(data: {x:number, y:number}) {
+  create(data: {x:number, y:number, flip: boolean}) {
     let { ratio } = this.registry.get('canvas');
     //   this.cameras.main.setBackgroundColor("#000000");
     // this.cameras.main.zoomTo(ratio, 1, 'Linear', true);
@@ -21,7 +21,7 @@ export default class DialogScene extends Phaser.Scene {
       data.x*ratio,
       data.y*ratio,
       "cat"
-    ).setScale(0.5*ratio);
+    ).setScale(0.5*ratio).setFlipX(data.flip);
 
     this.anims.create({
       key: "dead",
@@ -34,7 +34,7 @@ export default class DialogScene extends Phaser.Scene {
       frameRate: 1,
     });
     player.anims.play("dead", true).once('animationcomplete', ()=>{
-        this.scene.resume(SceneEnums.levelOne);
+        // this.scene.resume(SceneEnums.levelOne);
         this.scene.stop();
     });
   }

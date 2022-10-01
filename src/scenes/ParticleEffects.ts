@@ -45,7 +45,6 @@ export default class ParticleEffects extends Phaser.Scene {
           const v = tween.getValue();
           const x = Phaser.Math.Interpolation.CatmullRom(xVals, v);
           const y = Phaser.Math.Interpolation.CatmullRom(yVals, v);
-          console.log("xVals: ",xVals,"yVals: ",yVals)
           emitter.setPosition(x, y);
         },
         onComplete: () => {

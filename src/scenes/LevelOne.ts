@@ -36,7 +36,7 @@ export default class LevelOne extends Phaser.Scene {
   init(data: { firstTime: boolean }) {
     let { width, height, ratio } = this.registry.get("canvas");
     this.ratio = ratio;
-		this.scene.run(SceneEnums.particle)
+    this.scene.run(SceneEnums.particle);
 
     if (data.firstTime) this.displayLoadingBar(width, height);
   }
@@ -104,7 +104,7 @@ export default class LevelOne extends Phaser.Scene {
 
     //resize game if screen orientation or other
     // window.addEventListener('resize', this.resize);
-    // scene-a #create
+
     this.events.on("resume", (scene, data) => {
       // @ts-ignore
       this.cameras.main.fadeEffect.alpha = 0;
@@ -139,10 +139,17 @@ export default class LevelOne extends Phaser.Scene {
     // load the map
     this.map = this.make.tilemap(tilemapConfig);
 
+    // create the player sprite
+    this.player = new Player({
+      scene: this,
+      x: LevelOne.tileSize * 4,
+      y: this.map.heightInPixels - LevelOne.tileSize * 8,
+    });
+
     // tiles for the ground layer
     const groundTiles = this.map.addTilesetImage("TX Tileset Ground");
     // create the ground layer
-    this.groundLayer = this.map.createLayer("Tile Layer 1", groundTiles);
+    this.groundLayer = this.map.createLayer("ground", groundTiles);
 
     // // the player will collide with this layer
     this.groundLayer.setCollisionByExclusion([-1]);
@@ -171,6 +178,14 @@ export default class LevelOne extends Phaser.Scene {
         movingRangeX2: 15 * LevelOne.tileSize,
         ground: this.groundLayer,
       }),
+      new Mushroom({
+        scene: this,
+        x: 78.5 * LevelOne.tileSize,
+        y: LevelOne.tileSize * 18,
+        movingRangeX1: 78.5 * LevelOne.tileSize,
+        movingRangeX2: 79.5 * LevelOne.tileSize,
+        ground: this.groundLayer,
+      }),
     ];
     let birds = [
       new Bird({
@@ -195,15 +210,17 @@ export default class LevelOne extends Phaser.Scene {
         movingRangeX2: LevelOne.tileSize * 80,
       }),
     ];
-    let turtle = [new Turtle({
+    let turtle = [
+      new Turtle({
         scene: this,
-        x: LevelOne.tileSize * 10,
-        y: this.map.heightInPixels - 4 * LevelOne.tileSize,
+        x: LevelOne.tileSize * 26,
+        y: 2 * LevelOne.tileSize,
         state: "moving_right",
-        movingRangeX1: LevelOne.tileSize * 7,
-        movingRangeX2: LevelOne.tileSize * 14,
+        movingRangeX1: LevelOne.tileSize * 26,
+        movingRangeX2: LevelOne.tileSize * 32.5,
         ground: this.groundLayer,
-      })];
+      }),
+    ];
 
     let boars = [
       new Boar({
@@ -216,12 +233,7 @@ export default class LevelOne extends Phaser.Scene {
       }),
     ];
     this.beasts = [boars, mushrooms, birds, turtle];
-    // create the player sprite
-    this.player = new Player({
-      scene: this,
-      x: LevelOne.tileSize * 4,
-      y: this.map.heightInPixels - LevelOne.tileSize * 8,
-    });
+
     // PNG
     this.png = new PNJ({
       scene: this,
@@ -231,11 +243,11 @@ export default class LevelOne extends Phaser.Scene {
     this.png.flipX = true;
 
     this.lifes = [
-      new Life(this, LevelOne.tileSize * 29.5, LevelOne.tileSize * 1.7),
-      new Life(this, LevelOne.tileSize * 6, LevelOne.tileSize * 15),
-      new Life(this, LevelOne.tileSize * 36, LevelOne.tileSize * 15),
-
+      new Life(this, LevelOne.tileSize * 88.5, LevelOne.tileSize * 18.5),
+      new Life(this, LevelOne.tileSize * 53.98, LevelOne.tileSize * 2.3),
     ];
+
+    this.map.createLayer("decor", groundTiles);
 
     //  when first time scene called
     if (data.firstTime) {
@@ -405,10 +417,9 @@ export default class LevelOne extends Phaser.Scene {
               if (beast instanceof Mushroom) {
                 this.player.setVelocityY(-600);
                 beast.jumpOnMushroom();
-              } else if(beast instanceof Turtle){
+              } else if (beast instanceof Turtle) {
                 this.playerDie();
-              }
-                else{
+              } else {
                 this.player.setVelocityY(-280);
                 beast.die("jump");
               }
@@ -428,12 +439,13 @@ export default class LevelOne extends Phaser.Scene {
   }
 
   playerDie(): void {
-    this.cameras.main.fadeOut(1500);
+    this.cameras.main.fadeOut(1800);
     this.cameras.main.ignore(this.player);
 
     this.scene.launch(SceneEnums.death, {
       x: this.player.x - this.cameras.main.worldView.x,
       y: this.player.y - this.cameras.main.worldView.y,
+      flip: this.player.flipX,
     });
 
     // const playerCam = this.cameras.add();
@@ -458,6 +470,7 @@ export default class LevelOne extends Phaser.Scene {
         this.events.removeListener("slidePressed");
         this.events.removeListener("leftPressed");
         this.events.removeListener("rightPressed");
+        this.events.removeListener("resume");
         this.load.removeAllListeners();
 
         if (nbrLife < 0) this.scene.start(SceneEnums.menu);
@@ -486,16 +499,16 @@ export default class LevelOne extends Phaser.Scene {
     switch (this.dialogNumber) {
       case 1:
         // @ts-ignore
-        // this.cameras.main.fadeEffect.alpha = 0.8;
-        // this.scene.pause();
-        // textsAndImg = [
-        //   { text: "Je hais cette forêt !!!", img: "player_sad" },
-        //   {
-        //     text: "Et particulièrement tous ces horribles animaux ! Il faut que je me dépêche de rejoindre Caporal Coon... ",
-        //     img: "player_sad",
-        //   },
-        // ];
-        // this.scene.launch(SceneEnums.dialog, { textsAndImg: textsAndImg });
+        this.cameras.main.fadeEffect.alpha = 0.8;
+        this.scene.pause();
+        textsAndImg = [
+          { text: "Je hais cette forêt !!!", img: "player_sad" },
+          {
+            text: "Et particulièrement tous ces horribles animaux ! Il faut que je me dépêche de rejoindre Caporal Coon... ",
+            img: "player_sad",
+          },
+        ];
+        this.scene.launch(SceneEnums.dialog, { textsAndImg: textsAndImg });
         break;
 
       case 2:

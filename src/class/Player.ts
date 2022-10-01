@@ -184,7 +184,6 @@ export class Player extends Physics.Arcade.Sprite {
         this.setVelocity(0, 0);
         (this.body as Phaser.Physics.Arcade.Body).allowGravity = false;
         this.on("animationcomplete", () => this.stopAnimation = true)
-
     }
 
     getCurrentState(): string {

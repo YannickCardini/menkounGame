@@ -4,7 +4,7 @@ import { Bestiaire, BestiaireConfig } from "./Bestiaire";
 export class Boar extends Bestiaire {
 
     scene: Scene;
-    static VELOCITY = 140;
+    static VELOCITY = 180;
     freeze = false;
 
     constructor(config: BestiaireConfig) {

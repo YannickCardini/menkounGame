@@ -29,10 +29,10 @@ export class UI extends Phaser.GameObjects.Container {
         });
 
         if (!scene.sys.game.device.os.desktop) {
-            this.jumpButton = scene.add.image(width*0.83, height*0.75, 'jump_button').setScrollFactor(0).setInteractive().setScale(0.25*ratio);
-            this.slideButton = scene.add.image(this.jumpButton.x + 50*ratio, this.jumpButton.y + 45*ratio, 'slide_button').setScrollFactor(0).setInteractive().setScale(0.25*ratio);
-            this.leftButton = scene.add.image(width*0.1, this.slideButton.y, 'left_button').setScrollFactor(0).setInteractive().setScale(0.25*ratio);
-            this.rightButton = scene.add.image(this.leftButton.x + 70*ratio, this.leftButton.y, 'right_button').setScrollFactor(0).setInteractive().setScale(0.25*ratio);
+            this.jumpButton = scene.add.image(width*0.83, height*0.75, 'jump_button').setScrollFactor(0).setInteractive(scene.input.makePixelPerfect()).setScale(0.25*ratio);
+            this.slideButton = scene.add.image(this.jumpButton.x + 50*ratio, this.jumpButton.y + 45*ratio, 'slide_button').setScrollFactor(0).setInteractive(scene.input.makePixelPerfect()).setScale(0.25*ratio);
+            this.leftButton = scene.add.image(width*0.1, this.slideButton.y, 'left_button').setScrollFactor(0).setInteractive(scene.input.makePixelPerfect()).setScale(0.25*ratio);
+            this.rightButton = scene.add.image(this.leftButton.x + 70*ratio, this.leftButton.y, 'right_button').setScrollFactor(0).setInteractive(scene.input.makePixelPerfect()).setScale(0.25*ratio);
 
             this.jumpButton.on('pointerdown',()=>{
                 scene.events.emit('jumpPressed');

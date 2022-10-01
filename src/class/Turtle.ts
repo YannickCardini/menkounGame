@@ -9,9 +9,9 @@ export class Turtle extends Bestiaire {
 
         config.hitbox = {
             width: 80,
-            height: 60,
+            height: 70,
             offsetX: 0,
-            offsetY: 60
+            offsetY: 70
         };
 
         super(config, 'turtle');

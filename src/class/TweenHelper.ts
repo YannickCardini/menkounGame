@@ -50,7 +50,7 @@ export class TweenHelper {
     static floatEffect(scene: Scene, target: Phaser.GameObjects.Image): void {
         this.float = scene.tweens.add({
             targets: target,
-            y: target.y-14,
+            y: target.y-10,
             ease: 'Linear',
             duration: 2000,
             repeat: -1,

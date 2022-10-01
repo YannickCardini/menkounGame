@@ -75,7 +75,6 @@ export class Bestiaire extends Physics.Arcade.Sprite {
         }
         else
             this.body.setSize(this.width, this.height)
-
     }
 
     die(anim: string): void {
