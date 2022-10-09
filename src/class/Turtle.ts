@@ -8,9 +8,9 @@ export class Turtle extends Bestiaire {
     constructor(config: BestiaireConfig) {
 
         config.hitbox = {
-            width: 80,
+            width: 40,
             height: 70,
-            offsetX: 0,
+            offsetX: 20,
             offsetY: 70
         };
 
@@ -36,7 +36,7 @@ export class Turtle extends Bestiaire {
         scene.anims.create({
             key: "turtle_walk",
             frames: scene.anims.generateFrameNames('turtle', { prefix: 't1_walk', start: 1, end: 8, zeroPad: 2 }),
-            frameRate: 3,
+            frameRate: 4,
             repeat: -1
         });
     }
@@ -44,7 +44,7 @@ export class Turtle extends Bestiaire {
     update(...args: any[]): void {
         if (this.state !== "dying" && this.state !== "dead") {
             this.animations();
-            this.beastMovements(10);
+            this.beastMovements(9);
         }
     }
 
