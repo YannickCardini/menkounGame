@@ -24,6 +24,7 @@
 		"parcel-bundler": "^1.12.5",
 		"parcel-plugin-clean-easy": "^1.0.2",
 		"parcel-plugin-static-files-copy": "^2.4.3",
+		"tailwindcss": "^3.1.8",
 		"typescript": "^3.8.3"
 	},
 	"dependencies": {
