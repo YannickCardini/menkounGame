@@ -5,6 +5,7 @@ import PauseScene from "./scenes/PauseScene";
 import DialogScene from "./scenes/DialogScene";
 import DeathScene from "./scenes/DeathScene";
 import ParticleEffects from "./scenes/ParticleEffects";
+import { Debug } from "./debug.mode";
 
 const WIDTH = 1240;
 const HEIGHT = 640;
@@ -15,6 +16,7 @@ const widthHeight = {
   width: WIDTH,
   height: HEIGHT,
 };
+
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -36,7 +38,7 @@ const config: Phaser.Types.Core.GameConfig = {
     default: "arcade",
     arcade: {
       gravity: { y: 800 },
-      debug: false,
+      debug: Debug.MODE,
     },
   },
 

@@ -1,0 +1,272 @@
+{
+	"textures": [
+		{
+			"image": "dash.png",
+			"format": "RGBA8888",
+			"size": {
+				"w": 356,
+				"h": 1062
+			},
+			"scale": 1,
+			"frames": [
+				{
+					"filename": "dash01",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 178,
+						"h": 177
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 178,
+						"h": 177
+					},
+					"frame": {
+						"x": 0,
+						"y": 0,
+						"w": 178,
+						"h": 177
+					}
+				},
+				{
+					"filename": "dash02",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 178,
+						"h": 177
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 178,
+						"h": 177
+					},
+					"frame": {
+						"x": 178,
+						"y": 0,
+						"w": 178,
+						"h": 177
+					}
+				},
+				{
+					"filename": "dash03",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 178,
+						"h": 177
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 178,
+						"h": 177
+					},
+					"frame": {
+						"x": 0,
+						"y": 177,
+						"w": 178,
+						"h": 177
+					}
+				},
+				{
+					"filename": "dash04",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 178,
+						"h": 177
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 178,
+						"h": 177
+					},
+					"frame": {
+						"x": 178,
+						"y": 177,
+						"w": 178,
+						"h": 177
+					}
+				},
+				{
+					"filename": "dash05",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 178,
+						"h": 177
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 178,
+						"h": 177
+					},
+					"frame": {
+						"x": 0,
+						"y": 354,
+						"w": 178,
+						"h": 177
+					}
+				},
+				{
+					"filename": "dash06",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 178,
+						"h": 177
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 178,
+						"h": 177
+					},
+					"frame": {
+						"x": 178,
+						"y": 354,
+						"w": 178,
+						"h": 177
+					}
+				},
+				{
+					"filename": "dash07",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 178,
+						"h": 177
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 178,
+						"h": 177
+					},
+					"frame": {
+						"x": 0,
+						"y": 531,
+						"w": 178,
+						"h": 177
+					}
+				},
+				{
+					"filename": "dash08",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 178,
+						"h": 177
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 178,
+						"h": 177
+					},
+					"frame": {
+						"x": 178,
+						"y": 531,
+						"w": 178,
+						"h": 177
+					}
+				},
+				{
+					"filename": "dash09",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 178,
+						"h": 177
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 178,
+						"h": 177
+					},
+					"frame": {
+						"x": 0,
+						"y": 708,
+						"w": 178,
+						"h": 177
+					}
+				},
+				{
+					"filename": "dash10",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 178,
+						"h": 177
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 178,
+						"h": 177
+					},
+					"frame": {
+						"x": 178,
+						"y": 708,
+						"w": 178,
+						"h": 177
+					}
+				},
+				{
+					"filename": "dash11",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 178,
+						"h": 177
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 178,
+						"h": 177
+					},
+					"frame": {
+						"x": 0,
+						"y": 885,
+						"w": 178,
+						"h": 177
+					}
+				},
+				{
+					"filename": "dash12",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 178,
+						"h": 177
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 178,
+						"h": 177
+					},
+					"frame": {
+						"x": 178,
+						"y": 885,
+						"w": 178,
+						"h": 177
+					}
+				}
+			]
+		}
+	],
+	"meta": {
+		"app": "https://www.codeandweb.com/texturepacker",
+		"version": "3.0",
+		"smartupdate": "$TexturePacker:SmartUpdate:db12e66645e84e7b08b6ed0339e57601:6cebf0c33f75e58e76bbb7cb94e3ee7c:fbd246084c745f3d0a5a5362cc0ce7bd$"
+	}
+}

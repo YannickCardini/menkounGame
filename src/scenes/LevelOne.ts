@@ -9,6 +9,7 @@ import { Player } from "~/class/Player";
 import { PNJ } from "~/class/PNJ";
 import { Turtle } from "~/class/Turtle";
 import { UI } from "~/class/UI";
+import { Debug } from "~/debug.mode";
 import SceneEnums from "~/enums/SceneEnums";
 
 export default class LevelOne extends Phaser.Scene {
@@ -28,6 +29,7 @@ export default class LevelOne extends Phaser.Scene {
   png: PNJ;
   dialogNumber: number;
   ratio: number;
+  debugText: Phaser.GameObjects.Text;
 
   constructor() {
     super(SceneEnums.levelOne);
@@ -57,11 +59,17 @@ export default class LevelOne extends Phaser.Scene {
     // player animations
     this.load.atlas("cat", "assets/player.png", "assets/player.json");
     this.load.atlas("pnj", "assets/pnj.png", "assets/pnj.json");
-    // disappear animations
+    // effects
     this.load.atlas(
       "disappear",
       "assets/disappear.png",
       "assets/disappear.json"
+    );
+    // disappear animations
+    this.load.atlas(
+      "dash",
+      "assets/dash.png",
+      "assets/dash.json"
     );
     // mushroom animations
     this.load.atlas(
@@ -250,7 +258,7 @@ export default class LevelOne extends Phaser.Scene {
     this.map.createLayer("decor", groundTiles);
 
     //  when first time scene called
-    if (data.firstTime) {
+    if (data.firstTime && !Debug.SKIP_INTRO) {
       this.registry.set("nbrLife", 3);
       this.dialogNumber = 0;
       this.player.x = LevelOne.tileSize;
@@ -305,11 +313,47 @@ export default class LevelOne extends Phaser.Scene {
 
     // set background color, so the sky is not black
     this.cameras.main.setBackgroundColor("#99daf6");
+
+    if (Debug.MODE) {
+      var rect = this.add.rectangle(
+        10,
+        height - 100,
+        width * 0.6,
+        100,
+        0x000000,
+        0.5
+      );
+      this.debugText = this.add.text(rect.x, rect.y - 20, "Move the mouse", {
+        font: "16px Courier",
+        color: "#00ff00",
+      });
+      this.cameras.main.ignore([this.debugText, rect]);
+    }
   }
 
   update(): void {
-    // console.log(this.player.x, this.player.y)
-    // console.log(this.input.x, this.input.y)
+    if (Debug.MODE) {
+      this.debugText.setText([
+        "PLayer(X,Y): " +
+          this.player.x.toFixed(1) +
+          "," +
+          this.player.y.toFixed(1),
+        "Input(X,Y): " +
+          this.input.x.toFixed(1) +
+          "," +
+          this.input.y.toFixed(1),
+        "Camera worldView(X,Y): " +
+          this.cameras.main.worldView.x.toFixed(1) +
+          "," +
+          this.cameras.main.worldView.y.toFixed(1),
+      ]);
+    }
+
+    if (Debug.CLICK) {
+      this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+        this.player.setPosition(pointer.worldX, pointer.worldY);
+      });
+    }
 
     this.player.update();
 
@@ -498,6 +542,7 @@ export default class LevelOne extends Phaser.Scene {
     let textsAndImg: Array<textAndImg> = [];
     switch (this.dialogNumber) {
       case 1:
+        if (Debug.SKIP_DIALOG) break;
         // @ts-ignore
         this.cameras.main.fadeEffect.alpha = 0.8;
         this.scene.pause();
@@ -512,6 +557,7 @@ export default class LevelOne extends Phaser.Scene {
         break;
 
       case 2:
+        if (Debug.SKIP_DIALOG) break;
         // @ts-ignore
         this.cameras.main.fadeEffect.alpha = 0.8;
         this.scene.pause();

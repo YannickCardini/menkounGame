@@ -6,7 +6,7 @@ enum SceneEnums
     particle = 'ParticleEffects',
     levelZero = 'LevelZero',
     levelOne = 'LevelOne',
-    menu = 'menu'
+    menu = 'menu',
 }
 
 export default SceneEnums
