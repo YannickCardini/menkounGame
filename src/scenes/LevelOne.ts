@@ -284,8 +284,8 @@ export default class LevelOne extends Phaser.Scene {
 
     if (!data.firstTime) this.ui.lifeBlink();
 
-    config.scene.physics.add.collider(this.groundLayer, this.player);
-    config.scene.physics.add.collider(this.groundLayer, this.png);
+    this.physics.add.collider(this.groundLayer, this.player);
+    this.physics.add.collider(this.groundLayer, this.png);
 
     //  Add in a new camera, the same size and position as the main camera
     const UICam = this.cameras.add(0, 0, width, height, false, "UICam");

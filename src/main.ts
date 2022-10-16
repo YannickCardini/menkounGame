@@ -6,6 +6,7 @@ import DialogScene from "./scenes/DialogScene";
 import DeathScene from "./scenes/DeathScene";
 import ParticleEffects from "./scenes/ParticleEffects";
 import { Debug } from "./debug.mode";
+import LevelTwo from "./scenes/LevelTwo";
 
 const WIDTH = 1240;
 const HEIGHT = 640;
@@ -23,6 +24,7 @@ const config: Phaser.Types.Core.GameConfig = {
   width: WIDTH,
   height: HEIGHT,
   parent: "menkounGame",
+  willReadFrequently: true,
   scale: {
     // Fit to window
     mode: Phaser.Scale.FIT,
@@ -41,8 +43,11 @@ const config: Phaser.Types.Core.GameConfig = {
       debug: Debug.MODE,
     },
   },
-
-  scene: [Menu, LevelOne, PauseScene, DialogScene, DeathScene, ParticleEffects],
+  pixelArt:true,
+render:{
+  antialias: false,
+},
+  scene: [LevelTwo, Menu, LevelOne, PauseScene, DialogScene, DeathScene, ParticleEffects],
 };
 
 export default new Phaser.Game(config);

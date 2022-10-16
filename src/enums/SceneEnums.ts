@@ -6,6 +6,7 @@ enum SceneEnums
     particle = 'ParticleEffects',
     levelZero = 'LevelZero',
     levelOne = 'LevelOne',
+    levelTwo = 'LevelTwo',
     menu = 'menu',
 }
 
