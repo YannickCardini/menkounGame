@@ -18,7 +18,7 @@ export class Mushroom extends Bestiaire {
 
         this.scene = config.scene;
 
-        this.setScale(0.125);
+        this.setScale(0.125 * (config.scale ?? 1));
 
         this.createAnims(config.scene);
 

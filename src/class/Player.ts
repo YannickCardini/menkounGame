@@ -4,6 +4,7 @@ export interface playerConfig {
     scene: Scene,
     x: number,
     y: number,
+    scale?: number,
 }
 
 export class Player extends Physics.Arcade.Sprite {
@@ -19,7 +20,14 @@ export class Player extends Physics.Arcade.Sprite {
     rightButton: Phaser.GameObjects.Image;
     slideFinish = true;
     private _disableControls = false;
-    static readonly VELOCITY: number = 200;
+    private _velocity: number;
+
+    public get velocity(): number {
+        return this._velocity;
+    }
+    public set velocity(value: number) {
+        this._velocity = value;
+    }
 
     public get disableControls() {
         return this._disableControls;
@@ -34,16 +42,16 @@ export class Player extends Physics.Arcade.Sprite {
 
         config.scene.add.existing(this);
         config.scene.physics.add.existing(this);
-        this.cursors = config.scene.input.keyboard.createCursorKeys();
+        this.cursors = config.scene.input.keyboard?.createCursorKeys()!;
         config.scene.time.addEvent({ delay: 100, callback: this.delayDone, callbackScope: this, loop: false });
 
-        // this.setScale(width/1240);
-        this.setScale(0.5)
+        this.velocity = 200 * (config.scale ?? 1);
+        this.setScale(0.5 * (config.scale ?? 1))
         this.createAnims(config.scene);
 
         this.config = config;
         this.stopAnimation = false;
-        this.downKey = config.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
+        this.downKey = config.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN)!;
 
     }
 
@@ -79,9 +87,9 @@ export class Player extends Physics.Arcade.Sprite {
     controlsDesktop(): void {
         if (this.state === "sliding") {
             if (this.flipX)
-                this.setVelocityX(-Player.VELOCITY*1.6)
+                this.setVelocityX(-this.velocity*1.6)
             else
-                this.setVelocityX(Player.VELOCITY*1.6)
+                this.setVelocityX(this.velocity*1.6)
         }
         else if ((this.cursors.space.isDown || this.cursors.up.isDown))
             this.jump();
@@ -184,7 +192,7 @@ export class Player extends Physics.Arcade.Sprite {
     }
 
     delayDone(): void {
-        this.body.setSize(this.width - 160*this.scale, this.height-20*this.scale, true);
+        this.body?.setSize(this.width - 80, this.height-(20/(this.config.scale ?? 1)), true);
     }
 
     die(): void {
@@ -198,15 +206,15 @@ export class Player extends Physics.Arcade.Sprite {
         if (this.state === "sliding" || this.state === "dying")
             return this.state;
         if ((this.body as Phaser.Physics.Arcade.Body).onFloor()) {
-            if (this.body.velocity.x === 0)
+            if ((this.body as Phaser.Physics.Arcade.Body).velocity.x === 0)
                 return "idling";
-            else if (this.body.velocity.x === 50)
+            else if ((this.body as Phaser.Physics.Arcade.Body).velocity.x === 50)
                 return 'walking'
             else
                 return "running";
         }
         else {
-            if (this.body.velocity.y < 0)
+            if ((this.body as Phaser.Physics.Arcade.Body).velocity.y < 0)
                 return "jumping"
             else
                 return "falling"
@@ -215,14 +223,14 @@ export class Player extends Physics.Arcade.Sprite {
 
     jump(): void {
         if ((this.body as Phaser.Physics.Arcade.Body).onFloor())
-            this.setVelocityY(-400);
+            this.setVelocityY(-this.velocity*2);
     }
 
     playDashEffect(): void{
         if(this.slideFinish){
-            let sprite = this.config.scene.add.sprite(this.x, this.y, "dash").setScale(0.25);
+            let sprite = this.config.scene.add.sprite(this.x, this.y + (5 *(this.config.scale ?? 1)), "dash").setScale(0.25*(this.config.scale ?? 1));
             sprite.flipX = this.flipX;
-            this.scene.cameras.getCamera('UICam').ignore(sprite);
+            this.scene.cameras.getCamera('UICam')?.ignore(sprite);
             sprite.anims.play("slide_effect", true);
             sprite.on("animationcomplete", () => {
                 sprite.destroy();
@@ -234,9 +242,9 @@ export class Player extends Physics.Arcade.Sprite {
     pointerUp(): void {
         if (this.state === "sliding") {
             if (this.flipX)
-                this.setVelocityX(-Player.VELOCITY)
+                this.setVelocityX(-this.velocity)
             else
-                this.setVelocityX(Player.VELOCITY)
+                this.setVelocityX(this.velocity)
         } else {
             this.setVelocityX(0);
         }
@@ -245,7 +253,7 @@ export class Player extends Physics.Arcade.Sprite {
     run(direction = 'left'): void {
         let isLeft = direction === 'left' ? true : false;
         let isNegatif = isLeft ? -1 : 1;
-        this.setVelocityX(isNegatif * Player.VELOCITY);
+        this.setVelocityX(isNegatif * this.velocity);
         this.flipX = isLeft;
     }
 
@@ -282,7 +290,7 @@ export class Player extends Physics.Arcade.Sprite {
     walk(direction = 'left'): void {
         let isLeft = direction === 'left' ? true : false;
         let isNegatif = isLeft ? -1 : 1;
-        this.setVelocityX(isNegatif * Player.VELOCITY / 4);
+        this.setVelocityX(isNegatif * this.velocity / 4);
         this.flipX = isLeft;
     }
 }

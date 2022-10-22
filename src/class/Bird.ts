@@ -18,7 +18,7 @@ export class Bird extends Bestiaire {
 
         this.scene = config.scene;
 
-        this.setScale(0.5);
+        this.setScale(0.5 * (config.scale ?? 1));
 
         (this.body as Phaser.Physics.Arcade.Body).allowGravity = false;
 

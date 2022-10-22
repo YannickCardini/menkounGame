@@ -11,8 +11,6 @@ import LevelTwo from "./scenes/LevelTwo";
 const WIDTH = 1240;
 const HEIGHT = 640;
 
-console.log("version 1");
-
 const widthHeight = {
   width: WIDTH,
   height: HEIGHT,
@@ -24,7 +22,6 @@ const config: Phaser.Types.Core.GameConfig = {
   width: WIDTH,
   height: HEIGHT,
   parent: "menkounGame",
-  willReadFrequently: true,
   scale: {
     // Fit to window
     mode: Phaser.Scale.FIT,
@@ -43,11 +40,8 @@ const config: Phaser.Types.Core.GameConfig = {
       debug: Debug.MODE,
     },
   },
-  pixelArt:true,
-render:{
-  antialias: false,
-},
-  scene: [LevelTwo, Menu, LevelOne, PauseScene, DialogScene, DeathScene, ParticleEffects],
+  roundPixels: true,
+  scene: [ Menu, LevelOne, LevelTwo, PauseScene, DialogScene, DeathScene, ParticleEffects],
 };
 
 export default new Phaser.Game(config);

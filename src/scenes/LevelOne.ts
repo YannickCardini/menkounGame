@@ -62,14 +62,14 @@ export default class LevelOne extends Phaser.Scene {
     // effects
     this.load.atlas(
       "disappear",
-      "assets/disappear.png",
-      "assets/disappear.json"
+      "assets/effects/disappear.png",
+      "assets/effects/disappear.json"
     );
     // disappear animations
     this.load.atlas(
       "dash",
-      "assets/dash.png",
-      "assets/dash.json"
+      "assets/effects/dash.png",
+      "assets/effects/dash.json"
     );
     // mushroom animations
     this.load.atlas(
@@ -155,9 +155,9 @@ export default class LevelOne extends Phaser.Scene {
     });
 
     // tiles for the ground layer
-    const groundTiles = this.map.addTilesetImage("TX Tileset Ground");
+    const groundTiles = this.map.addTilesetImage("TX Tileset Ground")!;
     // create the ground layer
-    this.groundLayer = this.map.createLayer("ground", groundTiles);
+    this.groundLayer = this.map.createLayer("ground", groundTiles)!;
 
     // // the player will collide with this layer
     this.groundLayer.setCollisionByExclusion([-1]);
@@ -457,7 +457,7 @@ export default class LevelOne extends Phaser.Scene {
         // handling collision between enemy and hero
         if (beast.state !== "dying" && beast.state !== "dead")
           this.physics.world.collide(this.player, beast, (hero) => {
-            if (beast.body.touching.up && hero.body.touching.down) {
+            if (beast.body?.touching.up && (hero as Phaser.Types.Physics.Arcade.GameObjectWithBody).body.touching.down) {
               if (beast instanceof Mushroom) {
                 this.player.setVelocityY(-600);
                 beast.jumpOnMushroom();
@@ -469,8 +469,8 @@ export default class LevelOne extends Phaser.Scene {
               }
             } else if (
               beast instanceof Boar &&
-              ((beast.body.touching.right && !beast.flipX) ||
-                (beast.body.touching.left && beast.flipX))
+              ((beast.body?.touching.right && !beast.flipX) ||
+                (beast.body?.touching.left && beast.flipX))
             ) {
               this.playerDie();
             } else {

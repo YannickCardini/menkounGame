@@ -1,5 +1,5 @@
 import Phaser, { Tilemaps } from "phaser";
-import { Bestiaire, BestiaireConfig } from "~/class/Bestiaire";
+import { Bestiaire } from "~/class/Bestiaire";
 import { Bird } from "~/class/Bird";
 import { Boar } from "~/class/Boar";
 import { Dialog, textAndImg } from "~/class/Dialog";
@@ -18,7 +18,7 @@ export default class levelTwo extends Phaser.Scene {
     player: Player;
     beasts: Array<Array<Bestiaire>>;
     cursors: Phaser.Types.Input.Keyboard.CursorKeys;
-    static readonly tileSize: number = 64;
+    static readonly tileSize: number = 128;
     debugPlayerPositionText: Phaser.GameObjects.Text;
     lifes: Array<Life>;
     ui: UI;
@@ -28,32 +28,40 @@ export default class levelTwo extends Phaser.Scene {
     dialogNumber: number;
     ratio: number;
     debugText: Phaser.GameObjects.Text;
+    static readonly scale = 2;
+    splashEffectFinished = true;
 
     constructor() {
-        super(SceneEnums.levelTwo);
+        super({
+            key: SceneEnums.levelTwo,
+            physics: {
+                default: "arcade",
+                arcade: {
+                    gravity: { y: 1100 },
+                    debug: Debug.MODE,
+                },
+            },
+        });
     }
 
-    init(data: { firstTime: boolean }) {
-        ////////A Modifier quand vien depuis Menu///////////
-        let { width, height } = this.sys.game.canvas;
-        this.registry.set('canvas', { width: width, height: height, ratio: width / 620 });
-        this.ratio = width / 620;
-        this.registry.set('nbrLife', 3);
-
-        ////////A Modifier quand vien depuis Menu///////////
-
+    init() {
+        if (Debug.START_LEVEL_2) {
+            let { width, height } = this.sys.game.canvas;
+            this.registry.set('canvas', { width: width, height: height, ratio: width / 620 });
+            this.ratio = width / 620;
+            this.registry.set('nbrLife', 3);
+            this.displayLoadingBar(width, height);
+        }
         this.scene.run(SceneEnums.particle);
-
-        if (data.firstTime) this.displayLoadingBar(width, height);
     }
 
     preload() {
         // map made with Tiled in JSON format
         this.load.tilemapTiledJSON("map", "/assets/tiled/level2/level2.json");
         //Load bg image
-        this.load.image('background', 'assets/tiled/level2/background.png')
+        this.load.image('background', 'assets/background/level2/bg.png')
         // tiles in spritesheet
-        this.load.image("tiles_level2", "assets/tiled/level2/tiles_level2.png");
+        this.load.image("tiles", "assets/tiled/level2/tiles_extruded.png");
         // life info
         this.load.image("life", "assets/life.png");
         // player animations
@@ -62,14 +70,20 @@ export default class levelTwo extends Phaser.Scene {
         // effects
         this.load.atlas(
             "disappear",
-            "assets/disappear.png",
-            "assets/disappear.json"
+            "assets/effects/disappear.png",
+            "assets/effects/disappear.json"
         );
         // disappear animations
         this.load.atlas(
             "dash",
-            "assets/dash.png",
-            "assets/dash.json"
+            "assets/effects/dash.png",
+            "assets/effects/dash.json"
+        );
+        // splash animations
+        this.load.atlas(
+            "splash",
+            "assets/effects/splash.png",
+            "assets/effects/splash.json"
         );
         // mushroom animations
         this.load.atlas(
@@ -107,13 +121,16 @@ export default class levelTwo extends Phaser.Scene {
         }
     }
 
-    create(data: { firstTime: boolean }) {
+    create() {
         let { width, height } = this.sys.game.canvas;
 
         this.events.on("resume", (scene, data) => {
             // @ts-ignore
             this.cameras.main.fadeEffect.alpha = 0;
         });
+
+        //Add background
+        this.add.image(0, 0, 'background').setOrigin(0);
 
         const tilemapConfig: Phaser.Types.Tilemaps.TilemapConfig = {
             key: "map",
@@ -123,23 +140,26 @@ export default class levelTwo extends Phaser.Scene {
         // load the map
         this.map = this.make.tilemap(tilemapConfig);
 
-        //background
-        const background = this.map.addTilesetImage("background");
-        this.map.createLayer("Background", background);
         // tile image
-        const tiles = this.map.addTilesetImage("tiles_level2");
+        const tiles = this.map.addTilesetImage("tiles", undefined, 128, 128, 1, 2)!;
         // create the ground layer
-        this.groundLayer = this.map.createLayer("Tile Layer", tiles);
+        this.groundLayer = this.map.createLayer("Tile Layer 1", tiles)!;
 
         // create the player sprite
         this.player = new Player({
             scene: this,
             x: levelTwo.tileSize * 4,
-            y: this.map.heightInPixels - levelTwo.tileSize * 8,
+            y: this.map.heightInPixels - levelTwo.tileSize * 6,
+            scale: levelTwo.scale
         });
 
         // create the water
         this.map.createLayer('Water Layer', tiles);
+        this.anims.create({
+            key: "splash",
+            frames: this.anims.generateFrameNames('splash', { prefix: 'splash', start: 1, end: 7, zeroPad: 2 }),
+            frameRate: 16,
+        })
 
         // // the player will collide with this layer
         this.groundLayer.setCollisionByExclusion([-1]);
@@ -151,11 +171,12 @@ export default class levelTwo extends Phaser.Scene {
         let mushrooms = [
             new Mushroom({
                 scene: this,
-                x: 11 * levelTwo.tileSize,
-                y: this.map.heightInPixels - levelTwo.tileSize * 11,
-                movingRangeX1: 11 * levelTwo.tileSize,
-                movingRangeX2: 15 * levelTwo.tileSize,
+                x: 11.5 * levelTwo.tileSize,
+                y: levelTwo.tileSize * 23,
+                movingRangeX1: 11.5 * levelTwo.tileSize,
+                movingRangeX2: 13 * levelTwo.tileSize,
                 ground: this.groundLayer,
+                scale: levelTwo.scale
             }),
             new Mushroom({
                 scene: this,
@@ -164,6 +185,7 @@ export default class levelTwo extends Phaser.Scene {
                 movingRangeX1: 78.5 * levelTwo.tileSize,
                 movingRangeX2: 79.5 * levelTwo.tileSize,
                 ground: this.groundLayer,
+                scale: levelTwo.scale
             }),
         ];
         let birds = [
@@ -173,6 +195,7 @@ export default class levelTwo extends Phaser.Scene {
                 y: levelTwo.tileSize * 10,
                 movingRangeX1: -levelTwo.tileSize * 80,
                 movingRangeX2: levelTwo.tileSize * 60,
+                scale: levelTwo.scale
             }),
             new Bird({
                 scene: this,
@@ -180,6 +203,7 @@ export default class levelTwo extends Phaser.Scene {
                 y: levelTwo.tileSize * 2,
                 movingRangeX1: -levelTwo.tileSize * 80,
                 movingRangeX2: levelTwo.tileSize * 70,
+                scale: levelTwo.scale
             }),
             new Bird({
                 scene: this,
@@ -187,6 +211,7 @@ export default class levelTwo extends Phaser.Scene {
                 y: levelTwo.tileSize * 15,
                 movingRangeX1: -levelTwo.tileSize * 80,
                 movingRangeX2: levelTwo.tileSize * 80,
+                scale: levelTwo.scale
             }),
         ];
         let turtle = [
@@ -198,6 +223,7 @@ export default class levelTwo extends Phaser.Scene {
                 movingRangeX1: levelTwo.tileSize * 26,
                 movingRangeX2: levelTwo.tileSize * 32.5,
                 ground: this.groundLayer,
+                scale: levelTwo.scale
             }),
         ];
 
@@ -209,6 +235,7 @@ export default class levelTwo extends Phaser.Scene {
                 movingRangeX1: levelTwo.tileSize * 25,
                 movingRangeX2: levelTwo.tileSize * 43,
                 ground: this.groundLayer,
+                scale: levelTwo.scale
             }),
         ];
         this.beasts = [boars, mushrooms, birds, turtle];
@@ -225,9 +252,6 @@ export default class levelTwo extends Phaser.Scene {
             new Life(this, levelTwo.tileSize * 88.5, levelTwo.tileSize * 18.5),
             new Life(this, levelTwo.tileSize * 53.98, levelTwo.tileSize * 2.3),
         ];
-
-        this.map.createLayer("Decor Layer 1", tiles);
-        this.map.createLayer("Decor Layer 2", tiles);
 
         this.ui = this.add.existing(new UI(this));
 
@@ -313,6 +337,9 @@ export default class levelTwo extends Phaser.Scene {
                 }
             });
             this.playerCollide();
+            //check contact with water
+            if (this.player.y > levelTwo.tileSize * 26 && this.player.x > levelTwo.tileSize * 10 && this.player.x < levelTwo.tileSize * 16)
+                this.splashEffect(this.player.x,levelTwo.tileSize * 25.5)
             if (this.player.y > levelTwo.tileSize * 30 + this.player.height)
                 this.playerDie();
         }
@@ -396,20 +423,20 @@ export default class levelTwo extends Phaser.Scene {
                 // handling collision between enemy and hero
                 if (beast.state !== "dying" && beast.state !== "dead")
                     this.physics.world.collide(this.player, beast, (hero) => {
-                        if (beast.body.touching.up && hero.body.touching.down) {
+                        if (beast.body?.touching.up && (hero as Phaser.Types.Physics.Arcade.GameObjectWithBody).body.touching.down) {
                             if (beast instanceof Mushroom) {
-                                this.player.setVelocityY(-600);
+                                this.player.setVelocityY(-this.player.velocity * 3);
                                 beast.jumpOnMushroom();
                             } else if (beast instanceof Turtle) {
                                 this.playerDie();
                             } else {
-                                this.player.setVelocityY(-280);
+                                this.player.setVelocityY(-this.player.velocity);
                                 beast.die("jump");
                             }
                         } else if (
                             beast instanceof Boar &&
-                            ((beast.body.touching.right && !beast.flipX) ||
-                                (beast.body.touching.left && beast.flipX))
+                            ((beast.body?.touching.right && !beast.flipX) ||
+                                (beast.body?.touching.left && beast.flipX))
                         ) {
                             this.playerDie();
                         } else {
@@ -469,6 +496,21 @@ export default class levelTwo extends Phaser.Scene {
     //         canvas.style.height = height + "px";
     //     }
     // }
+
+    splashEffect(x: number, y: number): void{
+        if(this.splashEffectFinished){
+            this.splashEffectFinished = false;
+            let sprite = this.add.sprite(x, y , "splash");
+            this.cameras.getCamera('UICam')?.ignore(sprite);
+            sprite.anims.play("splash", true);
+            sprite.on("animationcomplete", () => {
+                sprite.destroy();
+                this.playerDie();
+                this.splashEffectFinished = true;
+            });
+        }
+
+    }
 
     startDialogScene(): void {
         this.dialogNumber++;

@@ -12,12 +12,12 @@ export default class PauseScene extends Phaser.Scene {
         this.load.image("play", "assets/ui/play_button.png")
     }
 
-    create(){
+    create(data: {scene: string}){
         let { width, height, ratio } = this.registry.get('canvas');
         this.pauseButton = this.add.image(width*0.94, height*0.1, 'play').setScrollFactor(0).setScale(0.15*ratio);
 
         this.pauseButton.setInteractive().on('pointerup', () => {
-            this.scene.resume(SceneEnums.levelOne);
+            this.scene.resume(data.scene);
             this.scene.stop();
         })
     }

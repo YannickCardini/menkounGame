@@ -15,7 +15,8 @@ export interface BestiaireConfig {
     movingRangeX1: number,
     movingRangeX2: number,
     hitbox?: hitbox,
-    ground?: Tilemaps.TilemapLayer
+    ground?: Tilemaps.TilemapLayer,
+    scale?: number
 }
 
 

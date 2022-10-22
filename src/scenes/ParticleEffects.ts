@@ -15,7 +15,7 @@ export default class ParticleEffects extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("star", "assets/star.png");
+    this.load.image("star", "assets/effects/star.png");
   }
 
   create() {

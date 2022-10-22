@@ -30,7 +30,7 @@ export default class Menu extends Phaser.Scene {
 
         this.fontSize = height/10;
         this.buttons = [];
-        this.cursors = this.input.keyboard.createCursorKeys();
+        this.cursors = this.input.keyboard?.createCursorKeys()!;
         this.selectedButtonIndex = 0
         this.fontSize = width/20;
 
@@ -131,7 +131,7 @@ export default class Menu extends Phaser.Scene {
 
         playButton.on('confirm', () => {
             this.registry.set('nbrLife', 3);
-            this.scene.start('LevelOne',{ firstTime: true });
+            this.scene.start(SceneEnums.levelTwo);
         })
 
         donnerButton.on('confirm', () => {

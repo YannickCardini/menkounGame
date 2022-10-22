@@ -1,4 +1,5 @@
 import { Scene } from "phaser";
+import SceneEnums from "~/enums/SceneEnums";
 import { TweenHelper } from "./TweenHelper";
 
 export class UI extends Phaser.GameObjects.Container {
@@ -25,7 +26,7 @@ export class UI extends Phaser.GameObjects.Container {
             // @ts-ignore
             scene.cameras.main.fadeEffect.alpha = 0.3;
             scene.scene.pause();
-            scene.scene.launch('PauseScene');
+            scene.scene.launch('PauseScene',{scene: scene.scene.key});
         });
 
         if (!scene.sys.game.device.os.desktop) {

@@ -18,7 +18,7 @@ export class Turtle extends Bestiaire {
 
         this.scene = config.scene;
 
-        this.setScale(0.18);
+        this.setScale(0.18 * (config.scale ?? 1));
 
         this.createAnims(config.scene);
 
