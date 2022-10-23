@@ -228,7 +228,7 @@ export class Player extends Physics.Arcade.Sprite {
 
     playDashEffect(): void{
         if(this.slideFinish){
-            let sprite = this.config.scene.add.sprite(this.x, this.y + (5 *(this.config.scale ?? 1)), "dash").setScale(0.25*(this.config.scale ?? 1));
+            let sprite = this.config.scene.add.sprite(this.x, this.y + (2 *(this.config.scale ?? 1)), "dash").setScale(0.25*(this.config.scale ?? 1));
             sprite.flipX = this.flipX;
             this.scene.cameras.getCamera('UICam')?.ignore(sprite);
             sprite.anims.play("slide_effect", true);

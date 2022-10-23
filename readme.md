@@ -138,5 +138,16 @@ Change 8000 to whatever you want.
 ## Send to staging
 
 ```
+# Linux
 npm run build && rsync -av -e ssh /home/loubard/Documents/menkoun\ game/menkounGame/dist/ ubuntu@51.79.255.217:/var/www/mainecoon.click/html/
+# Windows
+npm run build && rsync -av -e ssh /mnt/c/Users/Yannick/Documents/MenkounGame/dist/ ubuntu@51.79.255.217:/var/www/mainecoon.click/html/
 ```
+
+## Send to prod
+
+```
+rsync -av -e ssh /mnt/c/Users/Yannick/Documents/MenkounGame/dist/assets/ /var/www/menkoun.fr/html/assets/
+cp /mnt/c/Users/Yannick/Documents/MenkounGame/dist/{main.*.js,main.*.js.map} /var/www/menkoun.fr/html/
+```
+Change index.html to match new main.*.js name.

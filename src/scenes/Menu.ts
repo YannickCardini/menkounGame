@@ -131,7 +131,7 @@ export default class Menu extends Phaser.Scene {
 
         playButton.on('confirm', () => {
             this.registry.set('nbrLife', 3);
-            this.scene.start(SceneEnums.levelTwo);
+            this.scene.start(SceneEnums.levelOne,{firstTime: true});
         })
 
         donnerButton.on('confirm', () => {
