@@ -1,3 +1,4 @@
+import { Debug } from "~/debug.mode";
 import SceneEnums from "~/enums/SceneEnums";
 
 export default class Menu extends Phaser.Scene {
@@ -131,7 +132,10 @@ export default class Menu extends Phaser.Scene {
 
         playButton.on('confirm', () => {
             this.registry.set('nbrLife', 3);
-            this.scene.start(SceneEnums.levelOne,{firstTime: true});
+            let startScene = SceneEnums.levelOne;
+            if(Debug.START_LEVEL_2)
+                startScene = SceneEnums.levelTwo;
+            this.scene.start(startScene,{firstTime: true});
         })
 
         donnerButton.on('confirm', () => {

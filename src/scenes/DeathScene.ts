@@ -1,4 +1,3 @@
-import { Physics } from "phaser";
 import SceneEnums from "~/enums/SceneEnums";
 
 export default class DialogScene extends Phaser.Scene {
@@ -13,15 +12,12 @@ export default class DialogScene extends Phaser.Scene {
   }
 
   create(data: {x:number, y:number, flip: boolean}) {
-    let { ratio } = this.registry.get('canvas');
-    //   this.cameras.main.setBackgroundColor("#000000");
-    // this.cameras.main.zoomTo(ratio, 1, 'Linear', true);
 
     let player = this.add.sprite(
-      data.x*ratio,
-      data.y*ratio,
+      data.x,
+      data.y,
       "cat"
-    ).setScale(0.5*ratio).setFlipX(data.flip);
+    ).setFlipX(data.flip);
 
     this.anims.create({
       key: "dead",
@@ -34,7 +30,6 @@ export default class DialogScene extends Phaser.Scene {
       frameRate: 1,
     });
     player.anims.play("dead", true).once('animationcomplete', ()=>{
-        // this.scene.resume(SceneEnums.levelOne);
         this.scene.stop();
     });
   }

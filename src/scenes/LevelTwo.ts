@@ -29,7 +29,7 @@ export default class levelTwo extends Phaser.Scene {
     ratio: number;
     debugText: Phaser.GameObjects.Text;
     static readonly scale = 2;
-    splashEffectFinished = true;
+    splashEffectFinished: boolean;
 
     constructor() {
         super({
@@ -44,13 +44,13 @@ export default class levelTwo extends Phaser.Scene {
         });
     }
 
-    init() {
+    init(data: { firstTime: boolean }) {
         if (Debug.START_LEVEL_2) {
             let { width, height } = this.sys.game.canvas;
             this.registry.set('canvas', { width: width, height: height, ratio: width / 620 });
             this.ratio = width / 620;
-            this.registry.set('nbrLife', 3);
-            this.displayLoadingBar(width, height);
+            // this.registry.set('nbrLife', 3);
+            if(data.firstTime)this.displayLoadingBar(width, height);
         }
         this.scene.run(SceneEnums.particle);
     }
@@ -62,6 +62,8 @@ export default class levelTwo extends Phaser.Scene {
         this.load.image('background', 'assets/background/level2/bg.png')
         // tiles in spritesheet
         this.load.image("tiles", "assets/tiled/level2/tiles_extruded.png");
+        // object of maps
+        this.load.image("decor", "assets/tiled/level2/decor.png");
         // life info
         this.load.image("life", "assets/life.png");
         // player animations
@@ -121,8 +123,9 @@ export default class levelTwo extends Phaser.Scene {
         }
     }
 
-    create() {
+    create(data: {firstTime: boolean}) {
         let { width, height } = this.sys.game.canvas;
+        this.splashEffectFinished = true;
 
         this.events.on("resume", (scene, data) => {
             // @ts-ignore
@@ -144,6 +147,9 @@ export default class levelTwo extends Phaser.Scene {
         const tiles = this.map.addTilesetImage("tiles", undefined, 128, 128, 1, 2)!;
         // create the ground layer
         this.groundLayer = this.map.createLayer("Tile Layer 1", tiles)!;
+
+        // create decor layer
+        this.add.image(0,0,"decor").setOrigin(0);
 
         // create the player sprite
         this.player = new Player({
@@ -254,6 +260,7 @@ export default class levelTwo extends Phaser.Scene {
         ];
 
         this.ui = this.add.existing(new UI(this));
+        if (!data.firstTime) this.ui.lifeBlink();
 
         this.physics.add.collider(this.groundLayer, this.player);
         this.physics.add.collider(this.groundLayer, this.png);
@@ -479,7 +486,7 @@ export default class levelTwo extends Phaser.Scene {
 
                 if (nbrLife < 0) this.scene.start(SceneEnums.menu);
                 else {
-                    this.scene.restart();
+                    this.scene.restart({ firstTime: false });
                 }
             }
         );
@@ -505,8 +512,6 @@ export default class levelTwo extends Phaser.Scene {
             sprite.anims.play("splash", true);
             sprite.on("animationcomplete", () => {
                 sprite.destroy();
-                this.playerDie();
-                this.splashEffectFinished = true;
             });
         }
 
@@ -520,7 +525,7 @@ export default class levelTwo extends Phaser.Scene {
                 if (Debug.SKIP_DIALOG) break;
                 // @ts-ignore
                 this.cameras.main.fadeEffect.alpha = 0.8;
-                this.scene.pause();
+                this.scene.pause(   );
                 textsAndImg = [
                     { text: "Je hais cette forêt !!!", img: "player_sad" },
                     {

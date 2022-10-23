@@ -487,18 +487,11 @@ export default class LevelOne extends Phaser.Scene {
     this.cameras.main.ignore(this.player);
 
     this.scene.launch(SceneEnums.death, {
-      x: this.player.x - this.cameras.main.worldView.x,
-      y: this.player.y - this.cameras.main.worldView.y,
+      x: (this.player.x - this.cameras.main.worldView.x)*this.ratio,
+      y: (this.player.y - this.cameras.main.worldView.y)*this.ratio,
       flip: this.player.flipX,
     });
 
-    // const playerCam = this.cameras.add();
-    // playerCam.setBounds(LevelOne.tileSize, 0, this.map.widthInPixels - LevelOne.tileSize, this.map.heightInPixels);
-    // playerCam.startFollow(this.player);
-    // playerCam.zoomTo(this.ratio,0)
-    // //  The main camera will not render the UI Text objects
-    // this.cameras.main.ignore(this.player);
-    // playerCam.ignore(this.children.list.filter((child: Phaser.GameObjects.GameObject) => !(child instanceof Player)));
     this.registry.events.off("changedata");
     this.player.die();
     this.beasts.forEach((beasts) => {
