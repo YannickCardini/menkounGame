@@ -125,16 +125,6 @@ parcel src/index.html -p 8000
 
 Change 8000 to whatever you want.
 
-## Other Notes
-
-[parcel-plugin-clean-easy](https://github.com/lifuzhao100/parcel-plugin-clean-easy) is used to ensure only the latest files are in the `dist` folder. You can modify this behavior by changing `parcelCleanPaths` in `package.json`.
-
-[parcel-plugin-static-files](https://github.com/elwin013/parcel-plugin-static-files-copy#readme) is used to copy static files from `public` into the output directory and serve it. You can add additional paths by modifying `staticFiles` in `package.json`.
-
-## License
-
-[MIT License](https://github.com/ourcade/phaser3-typescript-parcel-template/blob/master/LICENSE)
-
 ## Send to staging
 
 ```
@@ -147,7 +137,9 @@ npm run build && rsync -av -e ssh /mnt/c/Users/Yannick/Documents/MenkounGame/dis
 ## Send to prod
 
 ```
+# Windows
 rsync -av -e ssh /mnt/c/Users/Yannick/Documents/MenkounGame/dist/assets/ /var/www/menkoun.fr/html/assets/
-cp /mnt/c/Users/Yannick/Documents/MenkounGame/dist/{main.*.js,main.*.js.map} /var/www/menkoun.fr/html/
+mv /mnt/c/Users/Yannick/Documents/MenkounGame/dist/main.*.js /var/www/menkoun.fr/html/main.coon.js
+mv /mnt/c/Users/Yannick/Documents/MenkounGame/dist/main.*.js.map /var/www/menkoun.fr/html/main.coon.js.map
 ```
 Change index.html to match new main.*.js name.
